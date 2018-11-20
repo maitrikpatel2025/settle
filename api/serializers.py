@@ -34,20 +34,12 @@ class PhoneSerializer(serializers.ModelSerializer):
         model = Phone
         fields = ('url', 'owner', 'number')
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return data
-
 
 class PropertyOwnerSerializer(serializers.ModelSerializer):
     phones = PhoneSerializer(many=True, read_only=False)
     class Meta:
         model = PropertyOwner
         fields = ('id', 'url', 'name', 'email', 'phones')
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return data
 
     def create(self, validated_data):
         phones = validated_data.pop('phones')
@@ -81,10 +73,6 @@ class FeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feature
         fields = ('id', 'url', 'property', 'name', 'value')
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return data
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -251,5 +239,4 @@ class HallSerializer(PropertySerializer):
             'electricity', 'water', 'generator', 'parking_space',
             'pictures', 'other_features'
         )
-
 
