@@ -8,45 +8,6 @@ from .models import (
 )
 
 
-def to_rep(request, instance, data):
-    #put your custom code here
-    #data['potentials'] = 
-    #[potential.name for potential in instance.potentials.all()]
-    return data
-
-
-def created_record(request, instance, validated_data):
-    """function for creating property """
-    user = request.user
-    location = validated_data.pop('location')
-    owner = validated_data.pop('owner')
-    phones = owner.pop('phones')
-    services = validated_data.pop('services')
-    potentials = validated_data.pop('potentials')
-    
-    location = Location.objects.create(**location)
-    owner = PropertyOwner.objects.create(sys_user=user, **owner)
-    owner.phones.set([
-        Phone.objects.create(owner=owner, number= phone["number"]) 
-        for phone in phones
-    ])
-    
-    property = instance.objects.create(
-        location=location, 
-        owner=owner, 
-        **validated_data
-    )
-    property.services.set([
-        Service.objects.create(name=service["name"]) 
-        for service in services
-    ])
-    property.potentials.set([
-        Potential.objects.create(name=potential["name"]) 
-        for potential in potentials
-    ])
-    return property
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -142,24 +103,48 @@ class PropertySerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
+        """function for creating property """
         request = self.context.get('request')
-        property = created_record(request, Property, validated_data)
+        user = request.user
+        location = validated_data.pop('location')
+        owner = validated_data.pop('owner')
+        phones = owner.pop('phones')
+        services = validated_data.pop('services')
+        potentials = validated_data.pop('potentials')
+        
+        location = Location.objects.create(**location)
+        owner = PropertyOwner.objects.create(sys_user=user, **owner)
+        owner.phones.set([
+            Phone.objects.create(owner=owner, number= phone["number"]) 
+            for phone in phones
+        ])
+        
+        instance = type(self).Meta.model
+        property = instance.objects.create(
+            location=location, 
+            owner=owner, 
+            **validated_data
+        )
+        property.services.set([
+            Service.objects.create(name=service["name"]) 
+            for service in services
+        ])
+        property.potentials.set([
+            Potential.objects.create(name=potential["name"]) 
+            for potential in potentials
+        ])
         return property
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
+        #request = self.context.get('request')
+        #put your custom code here
+        #data['potentials'] = 
+        #[potential.name for potential in instance.potentials.all()]
         return data
 
 
-class RoomSerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+class RoomSerializer(PropertySerializer):
     class Meta:
         model = Room
         fields = (
@@ -172,25 +157,8 @@ class RoomSerializer(serializers.ModelSerializer):
             'pictures', 'other_features'
         )
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        property = created_record(request, Room, validated_data)
-        return property
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
-        return data
-
-
-class HouseSerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+class HouseSerializer(PropertySerializer):
     class Meta:
         model = House
         fields = (
@@ -204,25 +172,8 @@ class HouseSerializer(serializers.ModelSerializer):
             'other_features'
         )
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        property = created_record(request, House, validated_data)
-        return property
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
-        return data
-
-
-class ApartmentSerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+class ApartmentSerializer(PropertySerializer):
     class Meta:
         model = Apartment
         fields = (
@@ -237,25 +188,8 @@ class ApartmentSerializer(serializers.ModelSerializer):
 
         )
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        property = created_record(request, Apartment, validated_data)
-        return property
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
-        return data
-
-
-class LandSerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+class LandSerializer(PropertySerializer):
     class Meta:
         model = Land
         fields = (
@@ -266,25 +200,8 @@ class LandSerializer(serializers.ModelSerializer):
             'other_features'
         )
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        property = created_record(request, Land, validated_data)
-        return property
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
-        return data
-
-
-class FrameSerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+class FrameSerializer(PropertySerializer):
     class Meta:
         model = Frame
         fields = (
@@ -295,25 +212,8 @@ class FrameSerializer(serializers.ModelSerializer):
             'post_date', 'pictures', 'other_features'
         )
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        property = created_record(request, Frame, validated_data)
-        return property
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
-        return data
-
-
-class OfficeSerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+class OfficeSerializer(PropertySerializer):
     class Meta:
         model = Office
         fields = (
@@ -326,25 +226,8 @@ class OfficeSerializer(serializers.ModelSerializer):
             'water', 'post_date', 'pictures', 'other_features'
         )
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        property = created_record(request, Office, validated_data)
-        return property
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
-        return data
-
-
-class HostelSerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+class HostelSerializer(PropertySerializer):
     class Meta:
         model = Hostel
         fields = (
@@ -357,25 +240,8 @@ class HostelSerializer(serializers.ModelSerializer):
             'parking_space', 'post_date', 'pictures', 'other_features'
         )
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        property = created_record(request, Hostel, validated_data)
-        return property
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
-        return data
-
-
-class HallSerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+class HallSerializer(PropertySerializer):
     class Meta:
         model = Hall
         fields = (
@@ -386,14 +252,4 @@ class HallSerializer(serializers.ModelSerializer):
             'pictures', 'other_features'
         )
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        property = created_record(request, Hall, validated_data)
-        return property
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        request = self.context.get('request')
-        data = to_rep(request, instance, data)
-        return data
 
