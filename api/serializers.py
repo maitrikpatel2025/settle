@@ -9,7 +9,7 @@ from .models import (
 
 
 def to_rep(request, instance, data):
-    #put your custom codes here
+    #put your custom code here
     #data['potentials'] = 
     #[potential.name for potential in instance.potentials.all()]
     return data
@@ -114,19 +114,30 @@ class PictureSerializer(serializers.ModelSerializer):
         model = Picture
         fields = ('id', 'url', 'property', 'tooltip', 'src')
 
-        
+
+class FeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feature
+        fields = ('id', 'url', 'property', 'name', 'value')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return data
+
+
 class PropertySerializer(serializers.ModelSerializer):
     pictures = PictureSerializer(many=True, read_only=True)
     location = LocationSerializer(many=False, read_only=False)
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Property
         fields = (
             'id', 'url', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
-            'potentials', 'pictures'
+            'potentials', 'pictures', 'other_features'
         )
 
     def create(self, validated_data):
@@ -146,6 +157,7 @@ class RoomSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Room
         fields = (
@@ -155,7 +167,7 @@ class RoomSerializer(serializers.ModelSerializer):
             'area', 'bathroom', 'tiles', 'gypsum', 'type_of_windows',
             'number_of_windows', 'payment_terms', 'unit_of_payment_terms',
             'electricity', 'water', 'fance', 'parking_space', 'post_date',
-            'pictures',
+            'pictures', 'other_features'
         )
 
     def create(self, validated_data):
@@ -175,6 +187,7 @@ class HouseSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = House
         fields = (
@@ -184,7 +197,8 @@ class HouseSerializer(serializers.ModelSerializer):
             'number_of_livingrooms', 'number_of_kitchens',
             'number_of_store', 'tiles', 'gypsum', 'type_of_windows',
             'payment_terms', 'unit_of_payment_terms', 'electricity',
-            'water', 'fance', 'parking_space', 'post_date', 'pictures'
+            'water', 'fance', 'parking_space', 'post_date', 'pictures',
+            'other_features'
         )
 
     def create(self, validated_data):
@@ -204,6 +218,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Apartment
         fields = (
@@ -214,7 +229,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
             'number_of_kitchens', 'number_of_store', 'tiles',
             'gypsum', 'payment_terms', 'unit_of_payment_terms',
             'electricity', 'water', 'parking_space', 'post_date',
-            'pictures',
+            'pictures', 'other_features'
 
         )
 
@@ -235,6 +250,7 @@ class LandSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Land
         fields = (
@@ -242,6 +258,7 @@ class LandSerializer(serializers.ModelSerializer):
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'width', 'length', 'length_unit',
             'area', 'is_registered', 'post_date', 'pictures',
+            'other_features'
         )
 
     def create(self, validated_data):
@@ -261,6 +278,7 @@ class FrameSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Frame
         fields = (
@@ -268,7 +286,7 @@ class FrameSerializer(serializers.ModelSerializer):
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'width', 'length', 'length_unit',
             'area', 'payment_terms', 'unit_of_payment_terms',
-            'post_date', 'pictures',
+            'post_date', 'pictures', 'other_features'
         )
 
     def create(self, validated_data):
@@ -288,6 +306,7 @@ class OfficeSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Office
         fields = (
@@ -297,7 +316,7 @@ class OfficeSerializer(serializers.ModelSerializer):
             'area', 'floor_number', 'number_of_rooms',
             'airconditioning', 'generator', 'sucurity', 'payment_terms',
             'unit_of_payment_terms', 'parking_space', 'elevator',
-            'water', 'post_date', 'pictures',
+            'water', 'post_date', 'pictures', 'other_features'
         )
 
     def create(self, validated_data):
@@ -317,6 +336,7 @@ class HostelSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Hostel
         fields = (
@@ -326,7 +346,7 @@ class HostelSerializer(serializers.ModelSerializer):
             'electricity', 'allow_cooking', 'tables', 'chairs',
             'water', 'water_tanks', 'transport', 'generator',
             'sucurity', 'payment_terms', 'unit_of_payment_terms',
-            'parking_space', 'post_date', 'pictures',
+            'parking_space', 'post_date', 'pictures', 'other_features'
         )
 
     def create(self, validated_data):
@@ -346,6 +366,7 @@ class HallSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Hall
         fields = (
@@ -353,7 +374,7 @@ class HallSerializer(serializers.ModelSerializer):
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'area', 'area_unit', 'carrying_capacity',
             'electricity', 'water', 'generator', 'parking_space',
-            'pictures'
+            'pictures', 'other_features'
         )
 
     def create(self, validated_data):
@@ -366,12 +387,3 @@ class HallSerializer(serializers.ModelSerializer):
         data = to_rep(request, instance, data)
         return data
 
-
-class FeatureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Feature
-        fields = ('id', 'url', 'property', 'name', 'value')
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return data
