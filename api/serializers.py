@@ -15,8 +15,9 @@ def to_rep(request, instance, data):
     return data
 
 
-def created_record(instance, validated_data):
+def created_record(request, instance, validated_data):
     """function for creating property """
+    user = request.user
     location = validated_data.pop('location')
     owner = validated_data.pop('owner')
     phones = owner.pop('phones')
@@ -24,7 +25,7 @@ def created_record(instance, validated_data):
     potentials = validated_data.pop('potentials')
     
     location = Location.objects.create(**location)
-    owner = PropertyOwner.objects.create(**owner)
+    owner = PropertyOwner.objects.create(sys_user=user, **owner)
     owner.phones.set([
         Phone.objects.create(owner=owner, number= phone["number"]) 
         for phone in phones
@@ -141,7 +142,8 @@ class PropertySerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(Property, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, Property, validated_data)
         return property
 
     def to_representation(self, instance):
@@ -171,7 +173,8 @@ class RoomSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(Room, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, Room, validated_data)
         return property
 
     def to_representation(self, instance):
@@ -202,7 +205,8 @@ class HouseSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(House, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, House, validated_data)
         return property
 
     def to_representation(self, instance):
@@ -234,7 +238,8 @@ class ApartmentSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(Apartment, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, Apartment, validated_data)
         return property
 
     def to_representation(self, instance):
@@ -262,7 +267,8 @@ class LandSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(Land, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, Land, validated_data)
         return property
 
     def to_representation(self, instance):
@@ -290,7 +296,8 @@ class FrameSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(Frame, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, Frame, validated_data)
         return property
 
     def to_representation(self, instance):
@@ -320,7 +327,8 @@ class OfficeSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(Office, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, Office, validated_data)
         return property
 
     def to_representation(self, instance):
@@ -350,7 +358,8 @@ class HostelSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(Hostel, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, Hostel, validated_data)
         return property
 
     def to_representation(self, instance):
@@ -378,7 +387,8 @@ class HallSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        property = created_record(Hall, validated_data)
+        request = self.context.get('request')
+        property = created_record(request, Hall, validated_data)
         return property
 
     def to_representation(self, instance):

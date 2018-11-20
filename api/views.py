@@ -1,8 +1,10 @@
 import itertools
 from django.db.models import Value
 from rest_framework import viewsets
+from api.permissions import IsOwnerOrReadOnly
 from django.contrib.auth.models import User, Group
 from django.db.models.functions import Concat, Replace
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import (
     Location, PropertyOwner, Phone, Service, Potential, Property, Picture, 
     Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature
@@ -118,6 +120,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Property to be viewed or edited."""
     queryset = Property.objects.all().order_by('-post_date')
     serializer_class = PropertySerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -137,6 +140,7 @@ class RoomViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Room to be viewed or edited."""
     queryset = Room.objects.all().order_by('-post_date')
     serializer_class = RoomSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -157,6 +161,7 @@ class HouseViewSet(viewsets.ModelViewSet):
     """API endpoint that allows House to be viewed or edited."""
     queryset = House.objects.all().order_by('-post_date')
     serializer_class = HouseSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -179,6 +184,7 @@ class ApartmentViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Apartment to be viewed or edited."""
     queryset = Apartment.objects.all().order_by('-post_date')
     serializer_class = ApartmentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -202,6 +208,7 @@ class LandViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Land to be viewed or edited."""
     queryset = Land.objects.all().order_by('-post_date')
     serializer_class = LandSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -219,6 +226,7 @@ class FrameViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Frame to be viewed or edited."""
     queryset = Frame.objects.all().order_by('-post_date')
     serializer_class = FrameSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 
         'price_negotiation', 'currency', 'descriptions', 
@@ -238,6 +246,7 @@ class OfficeViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Office to be viewed or edited."""
     queryset = Office.objects.all().order_by('-post_date')
     serializer_class = OfficeSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 
         'price_negotiation', 'currency', 
@@ -260,6 +269,7 @@ class HostelViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Hostel to be viewed or edited."""
     queryset = Hostel.objects.all().order_by('-post_date')
     serializer_class = HostelSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -280,6 +290,7 @@ class HallViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Hall to be viewed or edited."""
     queryset = Hall.objects.all().order_by('-post_date')
     serializer_class = HallSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
         'currency', 'descriptions', 'location', 'owner', 'services',

@@ -4,6 +4,7 @@ from uuid import uuid4
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.models import User, Group
 
 # Create your models here.
 
@@ -39,6 +40,7 @@ class Location(models.Model):
 
 class PropertyOwner(models.Model):
     id = models.AutoField(primary_key=True)
+    sys_user = models.ForeignKey(User, on_delete=models.CASCADE) #property owner(for Object level permissions)
     name = models.CharField(max_length=256)
     email = models.CharField(max_length=256)
 
@@ -52,7 +54,7 @@ class Phone(models.Model):
         on_delete=models.CASCADE, 
         related_name="phones", 
         blank=True,  #Should never be blank, work on this if you get time(this is for the sake of create method in PropOwnerSerializer)
-        )
+    )
     number = models.CharField(max_length=20, primary_key=True)
 
     def __str__(self):

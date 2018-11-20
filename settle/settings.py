@@ -87,6 +87,8 @@ DATABASES = {
     }
 }
 
+#Auth model
+#AUTH_USER_MODEL = 'api.User'
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
