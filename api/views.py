@@ -38,26 +38,6 @@ def fields(*args):
     return {**default_lookup_fields, **custom_lookup_fields}
 
 
-def custom_filtered_queryset(view, queryset):
-    """Do a custom search of location in every field of Location model"""
-    request = view.request
-    for backend in list(view.filter_backends):
-        queryset = backend().filter_queryset(request, queryset, view)
-
-    if request.GET.get('loc') is None:
-        return queryset  #if there is no location(loc) parameter in request
-        
-    keyword = request.GET['loc'].replace(' ', '').replace(',', '')
-    queryset = queryset.annotate(full_location=Replace(Concat(
-        'location__country', 
-        'location__region', 
-        'location__distric', 
-        'location__street1',
-        'location__street2'
-        ), Value(' '), Value(''))).filter(full_location__icontains=keyword)
-    return queryset
-
-
 class UserViewSet(viewsets.ModelViewSet):
     """API endpoint that allows users to be viewed or edited."""
     queryset = User.objects.all().order_by('-date_joined')
@@ -128,6 +108,25 @@ class PropertyViewSet(viewsets.ModelViewSet):
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
 
+    def filter_queryset(self, queryset):
+        """Do a custom search of location in every field of Location model"""
+        request = self.request
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(request, queryset, self)
+
+        if request.GET.get('loc') is None:
+            return queryset  #if there is no location(loc) parameter in request
+            
+        keyword = request.GET['loc'].replace(' ', '').replace(',', '')
+        queryset = queryset.annotate(full_location=Replace(Concat(
+            'location__country', 
+            'location__region', 
+            'location__distric', 
+            'location__street1',
+            'location__street2'
+            ), Value(' '), Value(''))).filter(full_location__icontains=keyword)
+        return queryset
+
 
 class PictureViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Picture to be viewed or edited."""
@@ -136,11 +135,10 @@ class PictureViewSet(viewsets.ModelViewSet):
     filter_fields = fields('id', 'property', 'tooltip')
 
 
-class RoomViewSet(viewsets.ModelViewSet):
+class RoomViewSet(PropertyViewSet):
     """API endpoint that allows Room to be viewed or edited."""
     queryset = Room.objects.all().order_by('-post_date')
     serializer_class = RoomSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -152,16 +150,11 @@ class RoomViewSet(viewsets.ModelViewSet):
         'pictures',
     )
 
-    def filter_queryset(self, queryset):
-        queryset = custom_filtered_queryset(self, queryset)
-        return queryset
 
-
-class HouseViewSet(viewsets.ModelViewSet):
+class HouseViewSet(PropertyViewSet):
     """API endpoint that allows House to be viewed or edited."""
     queryset = House.objects.all().order_by('-post_date')
     serializer_class = HouseSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -175,16 +168,11 @@ class HouseViewSet(viewsets.ModelViewSet):
         'parking_space', {'post_date': ['exact', 'lt', 'gt']},
     )
 
-    def filter_queryset(self, queryset):
-        queryset = custom_filtered_queryset(self, queryset)
-        return queryset
 
-
-class ApartmentViewSet(viewsets.ModelViewSet):
+class ApartmentViewSet(PropertyViewSet):
     """API endpoint that allows Apartment to be viewed or edited."""
     queryset = Apartment.objects.all().order_by('-post_date')
     serializer_class = ApartmentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -199,16 +187,11 @@ class ApartmentViewSet(viewsets.ModelViewSet):
         {'post_date': ['exact', 'lt', 'gt']},'pictures',
     )
 
-    def filter_queryset(self, queryset):
-        queryset = custom_filtered_queryset(self, queryset)
-        return queryset
 
-
-class LandViewSet(viewsets.ModelViewSet):
+class LandViewSet(PropertyViewSet):
     """API endpoint that allows Land to be viewed or edited."""
     queryset = Land.objects.all().order_by('-post_date')
     serializer_class = LandSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -217,16 +200,11 @@ class LandViewSet(viewsets.ModelViewSet):
         'pictures'
     )
 
-    def filter_queryset(self, queryset):
-        queryset = custom_filtered_queryset(self, queryset)
-        return queryset
 
-
-class FrameViewSet(viewsets.ModelViewSet):
+class FrameViewSet(PropertyViewSet):
     """API endpoint that allows Frame to be viewed or edited."""
     queryset = Frame.objects.all().order_by('-post_date')
     serializer_class = FrameSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 
         'price_negotiation', 'currency', 'descriptions', 
@@ -237,16 +215,11 @@ class FrameViewSet(viewsets.ModelViewSet):
         {'post_date': ['exact', 'lt', 'gt']},
     )
 
-    def filter_queryset(self, queryset):
-        queryset = custom_filtered_queryset(self, queryset)
-        return queryset
 
-
-class OfficeViewSet(viewsets.ModelViewSet):
+class OfficeViewSet(PropertyViewSet):
     """API endpoint that allows Office to be viewed or edited."""
     queryset = Office.objects.all().order_by('-post_date')
     serializer_class = OfficeSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 
         'price_negotiation', 'currency', 
@@ -260,16 +233,11 @@ class OfficeViewSet(viewsets.ModelViewSet):
         'water', {'post_date': ['exact', 'lt', 'gt']},
     )
 
-    def filter_queryset(self, queryset):
-        queryset = custom_filtered_queryset(self, queryset)
-        return queryset
 
-
-class HostelViewSet(viewsets.ModelViewSet):
+class HostelViewSet(PropertyViewSet):
     """API endpoint that allows Hostel to be viewed or edited."""
     queryset = Hostel.objects.all().order_by('-post_date')
     serializer_class = HostelSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
         'currency', 'descriptions', 'location', 'owner', 'services', 
@@ -281,16 +249,11 @@ class HostelViewSet(viewsets.ModelViewSet):
         {'post_date': ['exact', 'lt', 'gt']}, 'pictures',
     )
 
-    def filter_queryset(self, queryset):
-        queryset = custom_filtered_queryset(self, queryset)
-        return queryset
 
-
-class HallViewSet(viewsets.ModelViewSet):
+class HallViewSet(PropertyViewSet):
     """API endpoint that allows Hall to be viewed or edited."""
     queryset = Hall.objects.all().order_by('-post_date')
     serializer_class = HallSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
         'currency', 'descriptions', 'location', 'owner', 'services',
@@ -299,12 +262,10 @@ class HallViewSet(viewsets.ModelViewSet):
         'electricity', 'water', 'generator', 'parking_space',  
     )
 
-    def filter_queryset(self, queryset):
-        queryset = custom_filtered_queryset(self, queryset)
-        return queryset
 
 class FeatureViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Feature to be viewed or edited."""
     queryset = Feature.objects.all().order_by('-name')
     serializer_class = FeatureSerializer
     filter_fields = fields('id', 'property', 'name', 'value')
+
