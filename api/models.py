@@ -40,7 +40,8 @@ class Location(models.Model):
 
 class PropertyOwner(models.Model):
     id = models.AutoField(primary_key=True)
-    sys_user = models.ForeignKey(User, on_delete=models.CASCADE) #property owner(for Object level permissions)
+    # property owner(for Object level permissions)
+    sys_user = models.ForeignKey(User, on_delete=models.CASCADE) 
     name = models.CharField(max_length=256)
     email = models.CharField(max_length=256)
 
@@ -49,11 +50,13 @@ class PropertyOwner(models.Model):
 
 
 class Phone(models.Model):
+    # Owner field Should never be blank, work on this if you get time
+    # this is for the sake of create method in PropOwnerSerializer
     owner = models.ForeignKey(
         PropertyOwner, 
         on_delete=models.CASCADE, 
         related_name="phones", 
-        blank=True,  #Should never be blank, work on this if you get time(this is for the sake of create method in PropOwnerSerializer)
+        blank=True, 
     )
     number = models.CharField(max_length=20, primary_key=True)
 
@@ -105,6 +108,14 @@ class Picture(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="pictures")
     tooltip = models.CharField(max_length=256, blank=True)
     src = models.ImageField(upload_to=img_path)
+    
+    def delete(self, *args, **kwargs):
+        img_path = settings.MEDIA_ROOT + str(self.src)
+        deletion_info = super(Picture, self).delete(*args, **kwargs)
+        path_exist = os.path.isfile(img_path)
+        if path_exist:
+            os.remove(img_path)
+        return deletion_info
 
     def __str__(self):
         return f"{self.src}"
@@ -227,3 +238,4 @@ class Feature(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='other_features')
     name = models.CharField(max_length=256, blank=True)
     value = models.CharField(max_length=256, blank=True)
+

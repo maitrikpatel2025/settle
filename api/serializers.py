@@ -122,13 +122,13 @@ class PropertySerializer(serializers.ModelSerializer):
             for potential in potentials
         ])
         return property
-
+        
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        #request = self.context.get('request')
-        #put your custom code here
-        #data['potentials'] = 
-        #[potential.name for potential in instance.potentials.all()]
+        # request = self.context.get('request')
+        # put your custom code here
+        # data['potentials'] = 
+        # [potential.name for potential in instance.potentials.all()]
         return data
 
 

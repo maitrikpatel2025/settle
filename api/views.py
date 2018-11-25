@@ -73,7 +73,7 @@ class PropertyOwnerViewSet(viewsets.ModelViewSet):
         'id', 'name', {'email': ['exact', 'icontains']}, 
         'phones',
     )
-    
+
 
 class PhoneViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Phone to be viewed or edited."""
@@ -108,14 +108,39 @@ class PropertyViewSet(viewsets.ModelViewSet):
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
 
+    def destroy(self, request, pk=None):
+        """Function for deleting property and its associated components"""
+        property = self.queryset.get(pk=pk)
+        location = property.location
+        owner = property.owner
+        phones = owner.phones
+        services = property.services
+        potentials = property.potentials
+        pictures = property.pictures
+        other_features = property.other_features
+        phones.get_queryset().delete()
+        services.get_queryset().delete()
+        potentials.get_queryset().delete()
+
+        # Don't use bulk deletion because it doesn't use overriden delete
+        # on Picture Model, so with it picture files won't be deleted
+        for picture in pictures.get_queryset():
+            picture.delete()  
+
+        other_features.get_queryset().delete()
+        property.delete()
+        owner.delete()
+        location.delete()
+
     def filter_queryset(self, queryset):
         """Do a custom search of location in every field of Location model"""
         request = self.request
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(request, queryset, self)
-
+        
+        # If there is no location(loc) parameter in request
         if request.GET.get('loc') is None:
-            return queryset  #if there is no location(loc) parameter in request
+            return queryset  
             
         keyword = request.GET['loc'].replace(' ', '').replace(',', '')
         queryset = queryset.annotate(full_location=Replace(Concat(
