@@ -1,12 +1,12 @@
 import itertools
 from django.db.models import Value
 from rest_framework import viewsets
-from api.permissions import IsOwnerOrReadOnly
+from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
 from django.contrib.auth.models import User, Group
 from django.db.models.functions import Concat, Replace
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import (
-    Location, PropertyOwner, Phone, Service, Potential, Property, Picture, 
+    Location, PropertyOwner, Phone, Service, Potential, Property, Picture,
     Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature
 )
 from .serializers import (
@@ -25,14 +25,14 @@ def fields(*args):
     default_lookup_fields = filter(lambda field: isinstance(field, str), args)
     custom_lookup_fields = filter(lambda field: isinstance(field, dict), args)
     default_lookup_fields = {
-        key: value 
-        for key, value in 
+        key: value
+        for key, value in
         itertools.zip_longest(default_lookup_fields, [], fillvalue=['exact'])
-    } 
+    }
     custom_lookup_fields = {
-        key: value 
-        for dic in 
-        custom_lookup_fields 
+        key: value
+        for dic in
+        custom_lookup_fields
         for key, value in dic.items()
     }
     return {**default_lookup_fields, **custom_lookup_fields}
@@ -42,8 +42,9 @@ class UserViewSet(viewsets.ModelViewSet):
     """API endpoint that allows users to be viewed or edited."""
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
+    permission_classes = (IsAllowedUser,)
     filter_fields = fields(
-        'id', {'email': ['exact', 'icontains']}, 
+        'id', {'email': ['exact', 'icontains']},
         'groups', {'username': ['exact', 'icontains']}
     )
 
@@ -60,7 +61,7 @@ class LocationViewSet(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
     filter_fields = fields(
-        'id', 'country', 'region', 'distric', 'street1', 
+        'id', 'country', 'region', 'distric', 'street1',
         'street2', 'longitude', 'latitude'
     )
 
@@ -70,7 +71,7 @@ class PropertyOwnerViewSet(viewsets.ModelViewSet):
     queryset = PropertyOwner.objects.all()
     serializer_class = PropertyOwnerSerializer
     filter_fields = fields(
-        'id', 'name', {'email': ['exact', 'icontains']}, 
+        'id', 'name', {'email': ['exact', 'icontains']},
         'phones',
     )
 
@@ -103,8 +104,8 @@ class PropertyViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
-        'currency', 'descriptions', 'location', 'owner', 'services', 
-        'potentials', 'pictures', 'location__street1', 
+        'currency', 'descriptions', 'location', 'owner', 'services',
+        'potentials', 'pictures', 'location__street1',
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
 
@@ -125,7 +126,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         # Don't use bulk deletion because it doesn't use overriden delete
         # on Picture Model, so with it picture files won't be deleted
         for picture in pictures.get_queryset():
-            picture.delete()  
+            picture.delete()
 
         other_features.get_queryset().delete()
         property.delete()
@@ -137,19 +138,19 @@ class PropertyViewSet(viewsets.ModelViewSet):
         request = self.request
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(request, queryset, self)
-        
+
         # If there is no location(loc) parameter in request
         if request.GET.get('loc') is None:
-            return queryset  
-            
+            return queryset
+
         keyword = request.GET['loc'].replace(' ', '').replace(',', '')
         queryset = queryset.annotate(full_location=Replace(Concat(
-            'location__country', 
-            'location__region', 
-            'location__distric', 
+            'location__country',
+            'location__region',
+            'location__distric',
             'location__street1',
             'location__street2'
-            ), Value(' '), Value(''))).filter(full_location__icontains=keyword)
+        ), Value(' '), Value(''))).filter(full_location__icontains=keyword)
         return queryset
 
 
@@ -165,13 +166,13 @@ class RoomViewSet(PropertyViewSet):
     queryset = Room.objects.all().order_by('-post_date')
     serializer_class = RoomSerializer
     filter_fields = fields(
-        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
-        'currency', 'descriptions', 'location', 'owner', 'services', 
-        'potentials', 'width', 'length', 'length_unit', 
-        'area', 'bathroom', 'tiles', 'gypsum', 'type_of_windows', 
-        'number_of_windows', {'payment_terms': ['exact', 'lt', 'gt']}, 
-        'unit_of_payment_terms', 'electricity', 'water', 'fance', 
-        'parking_space', {'post_date': ['exact', 'lt', 'gt', 'range']}, 
+        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
+        'currency', 'descriptions', 'location', 'owner', 'services',
+        'potentials', 'width', 'length', 'length_unit',
+        'area', 'bathroom', 'tiles', 'gypsum', 'type_of_windows',
+        'number_of_windows', {'payment_terms': ['exact', 'lt', 'gt']},
+        'unit_of_payment_terms', 'electricity', 'water', 'fance',
+        'parking_space', {'post_date': ['exact', 'lt', 'gt', 'range']},
         'pictures',
     )
 
@@ -181,15 +182,15 @@ class HouseViewSet(PropertyViewSet):
     queryset = House.objects.all().order_by('-post_date')
     serializer_class = HouseSerializer
     filter_fields = fields(
-        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
-        'currency', 'descriptions', 'location', 'owner', 'services', 
-        'potentials', {'number_of_bathrooms': ['exact', 'lt', 'gt']}, 
+        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
+        'currency', 'descriptions', 'location', 'owner', 'services',
+        'potentials', {'number_of_bathrooms': ['exact', 'lt', 'gt']},
         {'number_of_bedrooms': ['exact', 'lt', 'gt']}, 'pictures',
-        {'number_of_livingrooms': ['exact', 'lt', 'gt']}, 
-        {'number_of_kitchens': ['exact', 'lt', 'gt']}, 
-        {'number_of_store': ['exact', 'lt', 'gt']}, 'tiles', 'gypsum', 
-        'type_of_windows', {'payment_terms': ['exact', 'lt', 'gt']}, 
-        'unit_of_payment_terms', 'electricity', 'water', 'fance', 
+        {'number_of_livingrooms': ['exact', 'lt', 'gt']},
+        {'number_of_kitchens': ['exact', 'lt', 'gt']},
+        {'number_of_store': ['exact', 'lt', 'gt']}, 'tiles', 'gypsum',
+        'type_of_windows', {'payment_terms': ['exact', 'lt', 'gt']},
+        'unit_of_payment_terms', 'electricity', 'water', 'fance',
         'parking_space', {'post_date': ['exact', 'lt', 'gt']},
     )
 
@@ -199,17 +200,17 @@ class ApartmentViewSet(PropertyViewSet):
     queryset = Apartment.objects.all().order_by('-post_date')
     serializer_class = ApartmentSerializer
     filter_fields = fields(
-        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
-        'currency', 'descriptions', 'location', 'owner', 'services', 
-        'potentials', 'floor_number', 'gypsum', 'unit_of_payment_terms', 
-        {'number_of_bathrooms': ['exact', 'lt', 'gt']}, 
-        {'number_of_bedrooms': ['exact', 'lt', 'gt']}, 
-        {'number_of_livingrooms': ['exact', 'lt', 'gt']}, 
-        {'number_of_kitchens': ['exact', 'lt', 'gt']}, 
-        {'number_of_store': ['exact', 'lt', 'gt']}, 'tiles', 
+        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
+        'currency', 'descriptions', 'location', 'owner', 'services',
+        'potentials', 'floor_number', 'gypsum', 'unit_of_payment_terms',
+        {'number_of_bathrooms': ['exact', 'lt', 'gt']},
+        {'number_of_bedrooms': ['exact', 'lt', 'gt']},
+        {'number_of_livingrooms': ['exact', 'lt', 'gt']},
+        {'number_of_kitchens': ['exact', 'lt', 'gt']},
+        {'number_of_store': ['exact', 'lt', 'gt']}, 'tiles',
         {'payment_terms': ['exact', 'lt', 'gt']},
-        'electricity', 'water', 'parking_space', 
-        {'post_date': ['exact', 'lt', 'gt']},'pictures',
+        'electricity', 'water', 'parking_space',
+        {'post_date': ['exact', 'lt', 'gt']}, 'pictures',
     )
 
 
@@ -218,10 +219,10 @@ class LandViewSet(PropertyViewSet):
     queryset = Land.objects.all().order_by('-post_date')
     serializer_class = LandSerializer
     filter_fields = fields(
-        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
-        'currency', 'descriptions', 'location', 'owner', 'services', 
-        'potentials', 'width', 'length', 'length_unit', 'area', 
-        'is_registered', {'post_date': ['exact', 'lt', 'gt']}, 
+        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
+        'currency', 'descriptions', 'location', 'owner', 'services',
+        'potentials', 'width', 'length', 'length_unit', 'area',
+        'is_registered', {'post_date': ['exact', 'lt', 'gt']},
         'pictures'
     )
 
@@ -231,11 +232,11 @@ class FrameViewSet(PropertyViewSet):
     queryset = Frame.objects.all().order_by('-post_date')
     serializer_class = FrameSerializer
     filter_fields = fields(
-        'id', {'price': ['exact', 'lt', 'gt']}, 
-        'price_negotiation', 'currency', 'descriptions', 
-        'location', 'owner', 'services', 'potentials', 
-        'width', 'length', 'length_unit', 'area', 
-        {'payment_terms': ['exact', 'lt', 'gt']}, 
+        'id', {'price': ['exact', 'lt', 'gt']},
+        'price_negotiation', 'currency', 'descriptions',
+        'location', 'owner', 'services', 'potentials',
+        'width', 'length', 'length_unit', 'area',
+        {'payment_terms': ['exact', 'lt', 'gt']},
         'unit_of_payment_terms', 'pictures',
         {'post_date': ['exact', 'lt', 'gt']},
     )
@@ -246,15 +247,15 @@ class OfficeViewSet(PropertyViewSet):
     queryset = Office.objects.all().order_by('-post_date')
     serializer_class = OfficeSerializer
     filter_fields = fields(
-        'id', {'price': ['exact', 'lt', 'gt']}, 
-        'price_negotiation', 'currency', 
-        'descriptions', 'location', 'owner', 'services', 
-        'potentials', 'width', 'length', 'length_unit', 
-        'area', 'floor_number', 'pictures', 'elevator', 
-        {'number_of_rooms': ['exact', 'lt', 'gt']}, 
-        'airconditioning', 'generator', 'sucurity', 
+        'id', {'price': ['exact', 'lt', 'gt']},
+        'price_negotiation', 'currency',
+        'descriptions', 'location', 'owner', 'services',
+        'potentials', 'width', 'length', 'length_unit',
+        'area', 'floor_number', 'pictures', 'elevator',
+        {'number_of_rooms': ['exact', 'lt', 'gt']},
+        'airconditioning', 'generator', 'sucurity',
         {'payment_terms': ['exact', 'lt', 'gt']},
-        'unit_of_payment_terms', 'parking_space', 
+        'unit_of_payment_terms', 'parking_space',
         'water', {'post_date': ['exact', 'lt', 'gt']},
     )
 
@@ -264,13 +265,13 @@ class HostelViewSet(PropertyViewSet):
     queryset = Hostel.objects.all().order_by('-post_date')
     serializer_class = HostelSerializer
     filter_fields = fields(
-        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation', 
-        'currency', 'descriptions', 'location', 'owner', 'services', 
-        'potentials', {'carrying_capacity': ['exact', 'lt', 'gt']}, 
-        'bed_type', 'electricity', 'allow_cooking', 'tables', 
-        'chairs', 'water', 'water_tanks', 'transport', 'generator', 
-        'sucurity', {'payment_terms': ['exact', 'lt', 'gt']}, 
-        'unit_of_payment_terms', 'parking_space', 
+        'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
+        'currency', 'descriptions', 'location', 'owner', 'services',
+        'potentials', {'carrying_capacity': ['exact', 'lt', 'gt']},
+        'bed_type', 'electricity', 'allow_cooking', 'tables',
+        'chairs', 'water', 'water_tanks', 'transport', 'generator',
+        'sucurity', {'payment_terms': ['exact', 'lt', 'gt']},
+        'unit_of_payment_terms', 'parking_space',
         {'post_date': ['exact', 'lt', 'gt']}, 'pictures',
     )
 
@@ -283,8 +284,8 @@ class HallViewSet(PropertyViewSet):
         'id', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
         'currency', 'descriptions', 'location', 'owner', 'services',
         'potentials', 'area', 'area_unit', 'pictures',
-        {'carrying_capacity': ['exact', 'lt', 'gt']}, 
-        'electricity', 'water', 'generator', 'parking_space',  
+        {'carrying_capacity': ['exact', 'lt', 'gt']},
+        'electricity', 'water', 'generator', 'parking_space',
     )
 
 
@@ -293,4 +294,3 @@ class FeatureViewSet(viewsets.ModelViewSet):
     queryset = Feature.objects.all().order_by('-name')
     serializer_class = FeatureSerializer
     filter_fields = fields('id', 'property', 'name', 'value')
-

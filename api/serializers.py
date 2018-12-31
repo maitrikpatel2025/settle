@@ -208,8 +208,8 @@ class OfficeSerializer(PropertySerializer):
             'id', 'url', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'width', 'length', 'length_unit',
-            'area', 'floor_number', 'number_of_rooms',
-            'airconditioning', 'generator', 'sucurity', 'payment_terms',
+            'area', 'floor_number', 'number_of_rooms', 'generator',
+            'airconditioning', 'sucurity', 'payment_terms',
             'unit_of_payment_terms', 'parking_space', 'elevator',
             'water', 'post_date', 'pictures', 'other_features'
         )

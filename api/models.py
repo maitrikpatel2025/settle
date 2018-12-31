@@ -40,7 +40,7 @@ class Location(models.Model):
 
 class PropertyOwner(models.Model):
     id = models.AutoField(primary_key=True)
-    # property owner(for Object level permissions)
+    # Property owner(for Object level permissions)
     sys_user = models.ForeignKey(User, on_delete=models.CASCADE) 
     name = models.CharField(max_length=256)
     email = models.CharField(max_length=256)
@@ -51,7 +51,7 @@ class PropertyOwner(models.Model):
 
 class Phone(models.Model):
     # Owner field Should never be blank, work on this if you get time
-    # this is for the sake of create method in PropOwnerSerializer
+    # This is for the sake of create method in PropOwnerSerializer
     owner = models.ForeignKey(
         PropertyOwner, 
         on_delete=models.CASCADE, 
@@ -94,9 +94,9 @@ class Property(models.Model):
 
 
 def img_path(instance, filename):
-    ext = filename.split('.')[-1]  # get file extension
+    ext = filename.split('.')[-1]  # Get file extension
     
-    if instance.pk:  # get filename
+    if instance.pk:  # Get filename
         filename = '{}.{}'.format(instance.pk, ext)
     else:
         filename = '{}.{}'.format(uuid4().hex, ext)
