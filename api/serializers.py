@@ -24,7 +24,7 @@ class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = (
-            'id', 'url', 'country', 'region', 'distric', 
+            'id', 'url', 'country', 'region', 'distric',
             'street1', 'street2', 'longitude', 'latitude'
         )
 
@@ -45,7 +45,7 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
         phones = validated_data.pop('phones')
         owner = PropertyOwner.objects.create(**validated_data)
         owner.phones.set([
-            Phone.objects.create(owner=owner, number= phone["number"]) 
+            Phone.objects.create(owner=owner, number= phone["number"])
             for phone in phones
         ])
         return owner
@@ -99,35 +99,35 @@ class PropertySerializer(serializers.ModelSerializer):
         phones = owner.pop('phones')
         services = validated_data.pop('services')
         potentials = validated_data.pop('potentials')
-        
+
         location = Location.objects.create(**location)
         owner = PropertyOwner.objects.create(sys_user=user, **owner)
         owner.phones.set([
-            Phone.objects.create(owner=owner, number= phone["number"]) 
+            Phone.objects.create(owner=owner, number= phone["number"])
             for phone in phones
         ])
-        
+
         instance = type(self).Meta.model
         property = instance.objects.create(
-            location=location, 
-            owner=owner, 
+            location=location,
+            owner=owner,
             **validated_data
         )
         property.services.set([
-            Service.objects.create(name=service["name"]) 
+            Service.objects.create(name=service["name"])
             for service in services
         ])
         property.potentials.set([
-            Potential.objects.create(name=potential["name"]) 
+            Potential.objects.create(name=potential["name"])
             for potential in potentials
         ])
         return property
-        
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         # request = self.context.get('request')
         # put your custom code here
-        # data['potentials'] = 
+        # data['potentials'] =
         # [potential.name for potential in instance.potentials.all()]
         return data
 
@@ -239,4 +239,3 @@ class HallSerializer(PropertySerializer):
             'electricity', 'water', 'generator', 'parking_space',
             'pictures', 'other_features'
         )
-
