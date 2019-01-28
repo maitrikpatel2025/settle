@@ -2,6 +2,7 @@ import django_filters
 from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
+
 from .models import (
     Location, PropertyOwner, Phone, Service, Potential, Property, Feature,
     Picture, Room, House, Apartment, Hostel, Frame, Land, Hall, Office

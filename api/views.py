@@ -1,10 +1,12 @@
 import itertools
+
 from django.db.models import Value
 from rest_framework import viewsets
-from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
 from django.contrib.auth.models import User, Group
 from django.db.models.functions import Concat, Replace
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+
+from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
 from .models import (
     Location, PropertyOwner, Phone, Service, Potential, Property, Picture,
     Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature
