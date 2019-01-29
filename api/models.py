@@ -6,6 +6,9 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User, Group
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
 
 # Create your models here.
 
@@ -19,10 +22,15 @@ ANSWER_CHOICES = (
     ('N', 'NO'),
 )
 
-BATHROOM_CHOICES = ( 
+BATHROOM_CHOICES = (
     ('Self Contained', 'Self Contained'),
     ('Public', 'Public'),
 )
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
 
 
 class Location(models.Model):
@@ -42,7 +50,7 @@ class Location(models.Model):
 class PropertyOwner(models.Model):
     id = models.AutoField(primary_key=True)
     # Property owner(for Object level permissions)
-    sys_user = models.ForeignKey(User, on_delete=models.CASCADE) 
+    sys_user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
     email = models.CharField(max_length=256)
 
@@ -54,10 +62,10 @@ class Phone(models.Model):
     # Owner field Should never be blank, work on this if you get time
     # This is for the sake of create method in PropOwnerSerializer
     owner = models.ForeignKey(
-        PropertyOwner, 
-        on_delete=models.CASCADE, 
-        related_name="phones", 
-        blank=True, 
+        PropertyOwner,
+        on_delete=models.CASCADE,
+        related_name="phones",
+        blank=True,
     )
     number = models.CharField(max_length=20, primary_key=True)
 
@@ -84,7 +92,7 @@ class Potential(models.Model):
 class Property(models.Model):
     id = models.AutoField(primary_key=True)
     price = models.FloatField()
-    price_negotiation = models.CharField(max_length=5, blank=True, choices=ANSWER_CHOICES) 
+    price_negotiation = models.CharField(max_length=5, blank=True, choices=ANSWER_CHOICES)
     currency = models.CharField(max_length=256)
     descriptions = models.TextField(blank=True)
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
@@ -96,7 +104,7 @@ class Property(models.Model):
 
 def img_path(instance, filename):
     ext = filename.split('.')[-1]  # Get file extension
-    
+
     if instance.pk:  # Get filename
         filename = '{}.{}'.format(instance.pk, ext)
     else:
@@ -109,7 +117,7 @@ class Picture(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="pictures")
     tooltip = models.CharField(max_length=256, blank=True)
     src = models.ImageField(upload_to=img_path)
-    
+
     def delete(self, *args, **kwargs):
         img_path = settings.MEDIA_ROOT + str(self.src)
         deletion_info = super(Picture, self).delete(*args, **kwargs)
@@ -120,8 +128,8 @@ class Picture(models.Model):
 
     def __str__(self):
         return f"{self.src}"
-        
-    
+
+
 class Room(Property):
     width = models.FloatField(blank=True, null=True)
     length = models.FloatField(blank=True, null=True)
@@ -138,7 +146,7 @@ class Room(Property):
     water = models.CharField(max_length=100, choices=ANSWER_CHOICES, blank=True)
     fance = models.CharField(max_length=100, choices=ANSWER_CHOICES, blank=True)
     parking_space = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
-    
+
 
 class House(Property):
     number_of_bathrooms = models.SmallIntegerField(blank=True, null=True)
@@ -155,7 +163,7 @@ class House(Property):
     water = models.CharField(max_length=100, choices=ANSWER_CHOICES, blank=True)
     fance = models.CharField(max_length=100, choices=ANSWER_CHOICES, blank=True)
     parking_space = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
-    
+
 
 class Apartment(Property):
     floor_number = models.SmallIntegerField(blank=True, null=True)
@@ -171,7 +179,7 @@ class Apartment(Property):
     electricity = models.CharField(max_length=100, choices=ANSWER_CHOICES, blank=True)
     water = models.CharField(max_length=100, choices=ANSWER_CHOICES, blank=True)
     parking_space = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
-    
+
 
 class Land(Property):
     width = models.FloatField(blank=True, null=True)
@@ -179,7 +187,7 @@ class Land(Property):
     length_unit = models.CharField(max_length=10, blank=True)
     area = models.FloatField(blank=True, null=True)
     is_registered = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
-    
+
 
 class Frame(Property):
     width = models.FloatField(blank=True, null=True)
@@ -188,7 +196,7 @@ class Frame(Property):
     area = models.FloatField(blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
     unit_of_payment_terms = models.CharField(max_length=100, blank=True)
-    
+
 
 class Office(Property):
     width = models.FloatField(blank=True, null=True)
@@ -205,7 +213,7 @@ class Office(Property):
     parking_space = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
     elevator = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
     water = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
-    
+
 
 class Hostel(Property):
     carrying_capacity = models.IntegerField(blank=True, null=True)
@@ -222,7 +230,7 @@ class Hostel(Property):
     payment_terms = models.SmallIntegerField(blank=True, null=True)
     unit_of_payment_terms = models.CharField(max_length=100, blank=True)
     parking_space = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
-    
+
 
 class Hall(Property):
     area = models.FloatField(blank=True, null=True)
@@ -239,4 +247,3 @@ class Feature(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='other_features')
     name = models.CharField(max_length=256, blank=True)
     value = models.CharField(max_length=256, blank=True)
-
