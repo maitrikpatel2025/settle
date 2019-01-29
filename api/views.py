@@ -1,10 +1,12 @@
 import itertools
+
 from django.db.models import Value
 from rest_framework import viewsets
-from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
 from django.contrib.auth.models import User, Group
 from django.db.models.functions import Concat, Replace
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+
+from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
 from .models import (
     Location, PropertyOwner, Phone, Service, Potential, Property, Picture,
     Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature
@@ -42,7 +44,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """API endpoint that allows users to be viewed or edited."""
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = (IsAllowedUser,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAllowedUser)
     filter_fields = fields(
         'id', {'email': ['exact', 'icontains']},
         'groups', {'username': ['exact', 'icontains']}
@@ -53,6 +55,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     """API endpoint that allows groups to be viewed or edited."""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAllowedUser)
     filter_fields = fields('id', 'name')
 
 
@@ -60,6 +63,7 @@ class LocationViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Location to be viewed or edited."""
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields(
         'id', 'country', 'region', 'distric', 'street1',
         'street2', 'longitude', 'latitude'
@@ -70,6 +74,7 @@ class PropertyOwnerViewSet(viewsets.ModelViewSet):
     """API endpoint that allows PropertyOwner to be viewed or edited."""
     queryset = PropertyOwner.objects.all()
     serializer_class = PropertyOwnerSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields(
         'id', 'name', {'email': ['exact', 'icontains']},
         'phones',
@@ -80,6 +85,7 @@ class PhoneViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Phone to be viewed or edited."""
     queryset = Phone.objects.all()
     serializer_class = PhoneSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields('owner', 'number')
 
 
@@ -87,6 +93,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Service to be viewed or edited."""
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields('id', 'name')
 
 
@@ -94,6 +101,7 @@ class PotentialViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Potential to be viewed or edited."""
     queryset = Potential.objects.all()
     serializer_class = PotentialSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields('id', 'name')
 
 
@@ -293,4 +301,5 @@ class FeatureViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Feature to be viewed or edited."""
     queryset = Feature.objects.all().order_by('-name')
     serializer_class = FeatureSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields('id', 'property', 'name', 'value')

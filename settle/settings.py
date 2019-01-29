@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_filters',
     'api',
 ]
@@ -90,11 +91,26 @@ DATABASES = {
 #Auth model
 #AUTH_USER_MODEL = 'api.User'
 
+############## CORS configurations #################
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = (
+    'localhost:3030',
+)
+CORS_ORIGIN_REGEX_WHITELIST = (
+    'localhost:3030',
+)
+############ End of CORS Configs ###################
+
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'api.permissions.IsOwnerOrReadOnly'
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -102,7 +118,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -142,4 +157,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'  #this is for every static file within django application
 MEDIA_ROOT = '/home/yezy/Documents/settle/media/'
-MEDIA_URL = '/media/' 
+MEDIA_URL = '/media/'
