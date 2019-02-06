@@ -110,7 +110,7 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PERMISSION_CLASSES': [
-        'api.permissions.IsOwnerOrReadOnly'
+        'api.permissions.IsAuthenticatedOrReadOnly'
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -156,5 +156,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'  #this is for every static file within django application
-MEDIA_ROOT = '/home/yezy/Documents/settle/media/'
+MEDIA_ROOT = '/home/yezy/Projects/personal/settle/media'
 MEDIA_URL = '/media/'
