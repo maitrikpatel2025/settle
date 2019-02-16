@@ -17,6 +17,11 @@ GENDER_CHOICES = (
     ('F', 'Female'),
 )
 
+CATEGORY_CHOICES = (
+    ('sale', 'Sale'),
+    ('rent', 'Rent')
+)
+
 ANSWER_CHOICES = (
     ('Y', 'YES'),
     ('N', 'NO'),
@@ -91,6 +96,7 @@ class Potential(models.Model):
 
 class Property(models.Model):
     id = models.AutoField(primary_key=True)
+    category = models.CharField(max_length=5, blank=False, choices=CATEGORY_CHOICES)
     price = models.FloatField()
     price_negotiation = models.CharField(max_length=5, blank=True, choices=ANSWER_CHOICES)
     currency = models.CharField(max_length=256)
