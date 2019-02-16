@@ -137,7 +137,7 @@ class RoomSerializer(PropertySerializer):
     class Meta:
         model = Room
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'width', 'length', 'length_unit',
             'area', 'bathroom', 'tiles', 'gypsum', 'type_of_windows',
@@ -151,7 +151,7 @@ class HouseSerializer(PropertySerializer):
     class Meta:
         model = House
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'number_of_bathrooms', 'number_of_bedrooms',
             'number_of_livingrooms', 'number_of_kitchens',
@@ -166,7 +166,7 @@ class ApartmentSerializer(PropertySerializer):
     class Meta:
         model = Apartment
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'floor_number', 'number_of_bathrooms',
             'number_of_bedrooms', 'number_of_livingrooms',
@@ -182,7 +182,7 @@ class LandSerializer(PropertySerializer):
     class Meta:
         model = Land
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'width', 'length', 'length_unit',
             'area', 'is_registered', 'post_date', 'pictures',
@@ -194,7 +194,7 @@ class FrameSerializer(PropertySerializer):
     class Meta:
         model = Frame
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'width', 'length', 'length_unit',
             'area', 'payment_terms', 'unit_of_payment_terms',
@@ -206,7 +206,7 @@ class OfficeSerializer(PropertySerializer):
     class Meta:
         model = Office
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'width', 'length', 'length_unit',
             'area', 'floor_number', 'number_of_rooms', 'generator',
@@ -220,7 +220,7 @@ class HostelSerializer(PropertySerializer):
     class Meta:
         model = Hostel
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'carrying_capacity', 'bed_type',
             'electricity', 'allow_cooking', 'tables', 'chairs',
@@ -234,7 +234,7 @@ class HallSerializer(PropertySerializer):
     class Meta:
         model = Hall
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'currency',
             'descriptions', 'location', 'owner', 'services',
             'potentials', 'area', 'area_unit', 'carrying_capacity',
             'electricity', 'water', 'generator', 'parking_space',
