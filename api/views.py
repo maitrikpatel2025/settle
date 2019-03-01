@@ -24,20 +24,16 @@ def fields(*args):
     """ Specify the field lookup that should be performed in a filter call.
     Default lookup is exact.
     """
-    default_lookup_fields = filter(lambda field: isinstance(field, str), args)
-    custom_lookup_fields = filter(lambda field: isinstance(field, dict), args)
-    default_lookup_fields = {
-        key: value
-        for key, value in
-        itertools.zip_longest(default_lookup_fields, [], fillvalue=['exact'])
-    }
-    custom_lookup_fields = {
-        key: value
-        for dic in
-        custom_lookup_fields
-        for key, value in dic.items()
-    }
-    return {**default_lookup_fields, **custom_lookup_fields}
+    lookup_fields = {}
+    for field in args:
+        if isinstance(field, str):
+            lookup_fields.update({field: ['exact']})
+        elif isinstance(field, dict):
+            lookup_fields.update(field)
+        else:
+            raise Exception("Invalid formating of lookup field")
+
+    return lookup_fields
 
 
 class UserViewSet(viewsets.ModelViewSet):
