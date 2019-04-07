@@ -1,7 +1,12 @@
+import json
+import collections
+
+import dictfier
 import django_filters
 from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
+from django_restql.mixins import DynamicFieldsMixin
 
 from .models import (
     Location, PropertyOwner, Phone, Service, Potential, Property, Feature,
@@ -9,19 +14,19 @@ from .models import (
 )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'url', 'username', 'email', 'groups')
 
 
-class GroupSerializer(serializers.ModelSerializer):
+class GroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ('id', 'url', 'name')
 
 
-class LocationSerializer(serializers.ModelSerializer):
+class LocationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = (
@@ -30,13 +35,13 @@ class LocationSerializer(serializers.ModelSerializer):
         )
 
 
-class PhoneSerializer(serializers.ModelSerializer):
+class PhoneSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Phone
         fields = ('url', 'owner', 'number')
 
 
-class PropertyOwnerSerializer(serializers.ModelSerializer):
+class PropertyOwnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     phones = PhoneSerializer(many=True, read_only=False)
     class Meta:
         model = PropertyOwner
@@ -52,31 +57,31 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
         return owner
 
 
-class ServiceSerializer(serializers.ModelSerializer):
+class ServiceSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ('id', 'url', 'name')
 
 
-class PotentialSerializer(serializers.ModelSerializer):
+class PotentialSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Potential
         fields = ('id', 'url', 'name')
 
 
-class PictureSerializer(serializers.ModelSerializer):
+class PictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Picture
         fields = ('id', 'url', 'property', 'tooltip', 'src')
 
 
-class FeatureSerializer(serializers.ModelSerializer):
+class FeatureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Feature
         fields = ('id', 'url', 'property', 'name', 'value')
 
 
-class PropertySerializer(serializers.ModelSerializer):
+class PropertySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     pictures = PictureSerializer(many=True, read_only=True)
     location = LocationSerializer(many=False, read_only=False)
     services = ServiceSerializer(many=True, read_only=False)
@@ -123,14 +128,6 @@ class PropertySerializer(serializers.ModelSerializer):
             for potential in potentials
         ])
         return property
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        # request = self.context.get('request')
-        # put your custom code here
-        # data['potentials'] =
-        # [potential.name for potential in instance.potentials.all()]
-        return data
 
 
 class RoomSerializer(PropertySerializer):
