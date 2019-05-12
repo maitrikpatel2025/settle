@@ -19,7 +19,8 @@ GENDER_CHOICES = (
 
 CATEGORY_CHOICES = (
     ('sale', 'Sale'),
-    ('rent', 'Rent')
+    ('rent', 'Rent'),
+    ('book', 'Book')
 )
 
 ANSWER_CHOICES = (
@@ -78,6 +79,14 @@ class Phone(models.Model):
         return self.number
 
 
+class Amenity(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=256)
+
+    def __str__(self):
+        return self.name
+
+
 class Service(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=256)
@@ -103,9 +112,23 @@ class Property(models.Model):
     descriptions = models.TextField(blank=True)
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     owner = models.ForeignKey(PropertyOwner, on_delete=models.CASCADE)
+    amenities = models.ManyToManyField(Amenity, blank=True, related_name="amenities")
     services = models.ManyToManyField(Service, blank=True, related_name="services")
     potentials = models.ManyToManyField(Potential, blank=True, related_name="potentials")
     post_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return (
+            "%s, %s, %s, %s, %s, %s" %
+            (
+                self.__class__.__name__,
+                self.location.country,
+                self.location.region,
+                self.location.distric,
+                self.location.street1,
+                self.location.street2
+            )
+        )
 
 
 def img_path(instance, filename):
@@ -121,6 +144,7 @@ def img_path(instance, filename):
 class Picture(models.Model):
     id = models.AutoField(primary_key=True)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="pictures")
+    is_main = models.BooleanField(default=False)
     tooltip = models.CharField(max_length=256, blank=True)
     src = models.ImageField(upload_to=img_path)
 
@@ -250,6 +274,16 @@ class Hall(Property):
 
 class Feature(models.Model):
     id = models.AutoField(primary_key=True)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='other_features')
     name = models.CharField(max_length=256, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class PropertyFeature(models.Model):
+    id = models.AutoField(primary_key=True)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='other_features')
+    feature = models.OneToOneField(Feature, on_delete=models.CASCADE)
     value = models.CharField(max_length=256, blank=True)
+
+    def __str__(self):
+        return self.feature.name

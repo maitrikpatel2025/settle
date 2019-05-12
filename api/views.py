@@ -9,14 +9,16 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
 from .models import (
     Location, PropertyOwner, Phone, Service, Potential, Property, Picture,
-    Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature
+    Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature, 
+    PropertyFeature, Amenity
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
     PropertyOwnerSerializer, PhoneSerializer, ServiceSerializer,
     PotentialSerializer, PropertySerializer, PictureSerializer,
     RoomSerializer, HouseSerializer, ApartmentSerializer, HostelSerializer,
-    FrameSerializer, LandSerializer, HallSerializer, OfficeSerializer
+    FrameSerializer, LandSerializer, HallSerializer, OfficeSerializer,
+    AmenitySerializer, PropertyFeatureSerializer
 )
 
 
@@ -83,6 +85,14 @@ class PhoneViewSet(viewsets.ModelViewSet):
     serializer_class = PhoneSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields('owner', 'number')
+
+
+class AmenityViewSet(viewsets.ModelViewSet):
+    """API endpoint that allows Amenity to be viewed or edited."""
+    queryset = Amenity.objects.all()
+    serializer_class = AmenitySerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    filter_fields = fields('id', 'name')
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
@@ -298,4 +308,12 @@ class FeatureViewSet(viewsets.ModelViewSet):
     queryset = Feature.objects.all().order_by('-name')
     serializer_class = FeatureSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_fields = fields('id', 'property', 'name', 'value')
+    filter_fields = fields('id', 'name')
+
+
+class PropertyFeatureViewSet(viewsets.ModelViewSet):
+    """API endpoint that allows PropertyFeature to be viewed or edited."""
+    queryset = PropertyFeature.objects.all().order_by('-name')
+    serializer_class = PropertyFeatureSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    filter_fields = fields('id', 'property', 'value')
