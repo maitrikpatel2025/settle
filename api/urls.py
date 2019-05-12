@@ -23,6 +23,8 @@ router.register(r'office', views.OfficeViewSet)
 router.register(r'hostel', views.HostelViewSet)
 router.register(r'hall', views.HallViewSet)
 router.register(r'feature', views.FeatureViewSet)
+router.register(r'property-feature', views.PropertyFeatureViewSet)
+router.register(r'amenity', views.AmenityViewSet)
 
 
 urlpatterns = [
