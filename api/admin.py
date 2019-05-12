@@ -2,7 +2,8 @@ from django.contrib import admin
 from .models import (
     Location, PropertyOwner, Phone, Service, Potential, 
     Property, Picture, Room, House, Apartment, Hostel, 
-    Frame, Land, Hall, Office, Feature
+    Frame, Land, Hall, Office, Feature, PropertyFeature,
+    Amenity
 )
 
 # Register your models here.
@@ -23,3 +24,5 @@ admin.site.register(PropertyOwner)
 admin.site.register(Room)
 admin.site.register(Service)
 admin.site.register(Feature)
+admin.site.register(PropertyFeature)
+admin.site.register(Amenity)
