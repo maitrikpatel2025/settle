@@ -6,28 +6,27 @@ import django_filters
 from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
-from django_restql.mixins import DynamicFieldsMixin
 
 from .models import (
     Location, PropertyOwner, Phone, Service, Potential, Property, Feature,
-    PropertyFeature, Picture, Room, House, Apartment, Hostel, Frame, Land, 
+    PropertyFeature, Picture, Room, House, Apartment, Hostel, Frame, Land,
     Hall, Office, Amenity
 )
 
 
-class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'url', 'username', 'email', 'groups')
 
 
-class GroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ('id', 'url', 'name')
 
 
-class LocationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = (
@@ -36,13 +35,13 @@ class LocationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         )
 
 
-class PhoneSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class PhoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Phone
         fields = ('url', 'owner', 'number')
 
 
-class PropertyOwnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class PropertyOwnerSerializer(serializers.ModelSerializer):
     phones = PhoneSerializer(many=True, read_only=False)
     class Meta:
         model = PropertyOwner
@@ -58,43 +57,43 @@ class PropertyOwnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return owner
 
 
-class AmenitySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class AmenitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ('id', 'url', 'name')
 
 
-class ServiceSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ('id', 'url', 'name')
 
 
-class PotentialSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class PotentialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Potential
         fields = ('id', 'url', 'name')
 
 
-class PictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class PictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Picture
         fields = ('id', 'url', 'is_main', 'property', 'tooltip', 'src')
 
 
-class FeatureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class FeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feature
         fields = ('id', 'url', 'name')
 
-class PropertyFeatureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class PropertyFeatureSerializer(serializers.ModelSerializer):
     feature = FeatureSerializer(many=False, read_only=False)
     class Meta:
         model = PropertyFeature
         fields = ('id', 'url', 'property', 'feature', 'value')
 
 
-class PropertySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class PropertySerializer(serializers.ModelSerializer):
     pictures = PictureSerializer(many=True, read_only=True)
     location = LocationSerializer(many=False, read_only=False)
     amenities = AmenitySerializer(many=True, read_only=False)
@@ -106,7 +105,7 @@ class PropertySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         model = Property
         fields = (
             'id', 'url', 'price', 'price_negotiation', 'currency',
-            'descriptions', 'location', 'owner', 'amenities', 
+            'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features',
             'post_date'
         )
@@ -186,7 +185,7 @@ class LandSerializer(PropertySerializer):
         fields = (
             'width', 'length', 'length_unit', 'area', 'is_registered',
         )
-    
+
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
 
@@ -194,10 +193,10 @@ class FrameSerializer(PropertySerializer):
     class Meta:
         model = Frame
         fields = (
-            'width', 'length', 'length_unit', 'area', 'payment_terms', 
+            'width', 'length', 'length_unit', 'area', 'payment_terms',
             'unit_of_payment_terms',
         )
-    
+
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
 
