@@ -1,3 +1,4 @@
+import json
 import itertools
 
 from django.db.models import Value
@@ -118,9 +119,8 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     serializer_class = PropertySerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
-        'id',  'category', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
-        'currency', 'descriptions', 'location', 'owner', 'services',
-        'potentials', 'pictures', 'location__street1',
+        'id',  'category', {'price': ['exact', 'lt', 'gt']},
+        'price_negotiation', 'currency', 'location', 'owner',
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
 
@@ -148,24 +148,38 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
         owner.delete()
         location.delete()
 
+    def contains_lookup(self, request, queryset, field):
+        if request.GET.get(field) is not None:
+            value = json.loads(request.GET[field])
+            field = field.replace("__contains", "__in")
+            lookup = {field: value}
+            for field in value:
+                queryset = queryset.filter(**lookup)
+        return queryset
+
+    def location_lookup(self, request, queryset, field):
+        # If there is no location(loc) parameter on request params
+        if request.GET.get(field) is not None:
+            keyword = request.GET[field].replace(' ', '').replace(',', '')
+            queryset = queryset.annotate(full_location=Replace(Concat(
+                'location__country',
+                'location__region',
+                'location__distric',
+                'location__street1',
+                'location__street2'
+            ), Value(' '), Value(''))).filter(full_location__icontains=keyword)
+        return queryset
+
     def filter_queryset(self, queryset):
         """Do a custom search of location in every field of Location model"""
         request = self.request
-        for backend in list(self.filter_backends):
+        for backend in self.filter_backends:
             queryset = backend().filter_queryset(request, queryset, self)
 
-        # If there is no location(loc) parameter in request
-        if request.GET.get('loc') is None:
-            return queryset
-
-        keyword = request.GET['loc'].replace(' ', '').replace(',', '')
-        queryset = queryset.annotate(full_location=Replace(Concat(
-            'location__country',
-            'location__region',
-            'location__distric',
-            'location__street1',
-            'location__street2'
-        ), Value(' '), Value(''))).filter(full_location__icontains=keyword)
+        queryset = self.location_lookup(request, queryset, "loc")
+        queryset = self.contains_lookup(request, queryset, "services__contains")
+        queryset = self.contains_lookup(request, queryset, "amenities__contains")
+        queryset = self.contains_lookup(request, queryset, "potentials__contains")
         return queryset
 
 
@@ -181,15 +195,9 @@ class RoomViewSet(PropertyViewSet):
     queryset = Room.objects.all().order_by('-post_date')
     serializer_class = RoomSerializer
     filter_fields = fields(
-        'id',  'category', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
-        'currency', 'descriptions', 'location', 'owner', 'services',
-        'potentials', 'width', 'length', 'length_unit',
-        'area', 'bathroom', 'tiles', 'gypsum', 'type_of_windows',
-        'number_of_windows', {'payment_terms': ['exact', 'lt', 'gt']},
-        'unit_of_payment_terms', 'electricity', 'water', 'fance',
-        'parking_space', {'post_date': ['exact', 'lt', 'gt', 'range']},
-        'pictures',
+        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
     )
+    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 
 class HouseViewSet(PropertyViewSet):
@@ -197,49 +205,25 @@ class HouseViewSet(PropertyViewSet):
     queryset = House.objects.all().order_by('-post_date')
     serializer_class = HouseSerializer
     filter_fields = fields(
-        'id', 'category', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
-        'currency', 'descriptions', 'location', 'owner', 'services',
-        'potentials', {'number_of_bathrooms': ['exact', 'lt', 'gt']},
-        {'number_of_bedrooms': ['exact', 'lt', 'gt']}, 'pictures',
-        {'number_of_livingrooms': ['exact', 'lt', 'gt']},
-        {'number_of_kitchens': ['exact', 'lt', 'gt']},
-        {'number_of_store': ['exact', 'lt', 'gt']}, 'tiles', 'gypsum',
-        'type_of_windows', {'payment_terms': ['exact', 'lt', 'gt']},
-        'unit_of_payment_terms', 'electricity', 'water', 'fance',
-        'parking_space', {'post_date': ['exact', 'lt', 'gt']},
+        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
     )
-
+    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 class ApartmentViewSet(PropertyViewSet):
     """API endpoint that allows Apartment to be viewed or edited."""
     queryset = Apartment.objects.all().order_by('-post_date')
     serializer_class = ApartmentSerializer
     filter_fields = fields(
-        'id', 'category', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
-        'currency', 'descriptions', 'location', 'owner', 'services',
-        'potentials', 'floor_number', 'gypsum', 'unit_of_payment_terms',
-        {'number_of_bathrooms': ['exact', 'lt', 'gt']},
-        {'number_of_bedrooms': ['exact', 'lt', 'gt']},
-        {'number_of_livingrooms': ['exact', 'lt', 'gt']},
-        {'number_of_kitchens': ['exact', 'lt', 'gt']},
-        {'number_of_store': ['exact', 'lt', 'gt']}, 'tiles',
-        {'payment_terms': ['exact', 'lt', 'gt']},
-        'electricity', 'water', 'parking_space',
-        {'post_date': ['exact', 'lt', 'gt']}, 'pictures',
+        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
     )
-
+    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 class LandViewSet(PropertyViewSet):
     """API endpoint that allows Land to be viewed or edited."""
     queryset = Land.objects.all().order_by('-post_date')
     serializer_class = LandSerializer
-    filter_fields = fields(
-        'id', 'category', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
-        'currency', 'descriptions', 'location', 'owner', 'services',
-        'potentials', 'width', 'length', 'length_unit', 'area',
-        'is_registered', {'post_date': ['exact', 'lt', 'gt']},
-        'pictures'
-    )
+    filter_fields = fields()
+    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 
 class FrameViewSet(PropertyViewSet):
@@ -247,14 +231,9 @@ class FrameViewSet(PropertyViewSet):
     queryset = Frame.objects.all().order_by('-post_date')
     serializer_class = FrameSerializer
     filter_fields = fields(
-        'id', 'category', {'price': ['exact', 'lt', 'gt']},
-        'price_negotiation', 'currency', 'descriptions',
-        'location', 'owner', 'services', 'potentials',
-        'width', 'length', 'length_unit', 'area',
-        {'payment_terms': ['exact', 'lt', 'gt']},
-        'unit_of_payment_terms', 'pictures',
-        {'post_date': ['exact', 'lt', 'gt']},
+        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
     )
+    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 
 class OfficeViewSet(PropertyViewSet):
@@ -262,46 +241,26 @@ class OfficeViewSet(PropertyViewSet):
     queryset = Office.objects.all().order_by('-post_date')
     serializer_class = OfficeSerializer
     filter_fields = fields(
-        'id', 'category', {'price': ['exact', 'lt', 'gt']},
-        'price_negotiation', 'currency',
-        'descriptions', 'location', 'owner', 'services',
-        'potentials', 'width', 'length', 'length_unit',
-        'area', 'floor_number', 'pictures', 'elevator',
-        {'number_of_rooms': ['exact', 'lt', 'gt']},
-        'airconditioning', 'generator', 'sucurity',
-        {'payment_terms': ['exact', 'lt', 'gt']},
-        'unit_of_payment_terms', 'parking_space',
-        'water', {'post_date': ['exact', 'lt', 'gt']},
+        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
     )
-
+    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 class HostelViewSet(PropertyViewSet):
     """API endpoint that allows Hostel to be viewed or edited."""
     queryset = Hostel.objects.all().order_by('-post_date')
     serializer_class = HostelSerializer
     filter_fields = fields(
-        'id', 'category', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
-        'currency', 'descriptions', 'location', 'owner', 'services',
-        'potentials', {'carrying_capacity': ['exact', 'lt', 'gt']},
-        'bed_type', 'electricity', 'allow_cooking', 'tables',
-        'chairs', 'water', 'water_tanks', 'transport', 'generator',
-        'sucurity', {'payment_terms': ['exact', 'lt', 'gt']},
-        'unit_of_payment_terms', 'parking_space',
-        {'post_date': ['exact', 'lt', 'gt']}, 'pictures',
+        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
     )
+    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 
 class HallViewSet(PropertyViewSet):
     """API endpoint that allows Hall to be viewed or edited."""
     queryset = Hall.objects.all().order_by('-post_date')
     serializer_class = HallSerializer
-    filter_fields = fields(
-        'id', 'category', {'price': ['exact', 'lt', 'gt']}, 'price_negotiation',
-        'currency', 'descriptions', 'location', 'owner', 'services',
-        'potentials', 'area', 'area_unit', 'pictures',
-        {'carrying_capacity': ['exact', 'lt', 'gt']},
-        'electricity', 'water', 'generator', 'parking_space',
-    )
+    filter_fields = fields()
+    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 
 class FeatureViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
@@ -314,7 +273,7 @@ class FeatureViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
 
 class PropertyFeatureViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     """API endpoint that allows PropertyFeature to be viewed or edited."""
-    queryset = PropertyFeature.objects.all().order_by('-name')
+    queryset = PropertyFeature.objects.all().order_by('-id')
     serializer_class = PropertyFeatureSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields('id', 'property', 'value')

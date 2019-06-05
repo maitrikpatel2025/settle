@@ -100,12 +100,12 @@ class PropertySerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=False)
     potentials = PotentialSerializer(many=True, read_only=False)
     owner = PropertyOwnerSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=True)
+    other_features = PropertyFeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Property
         fields = (
-            'id', 'url', 'price', 'price_negotiation', 'currency',
-            'descriptions', 'location', 'owner', 'amenities',
+            'id', 'url', 'category', 'price', 'price_negotiation', 'rating',
+            'currency', 'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features',
             'post_date'
         )
@@ -184,6 +184,7 @@ class LandSerializer(PropertySerializer):
         model = Land
         fields = (
             'width', 'length', 'length_unit', 'area', 'is_registered',
+            'payment_terms', 'unit_of_payment_terms',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
@@ -214,9 +215,7 @@ class OfficeSerializer(PropertySerializer):
 class HostelSerializer(PropertySerializer):
     class Meta:
         model = Hostel
-        fields = (
-            'payment_terms', 'unit_of_payment_terms',
-        )
+        fields = ()
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
@@ -226,6 +225,7 @@ class HallSerializer(PropertySerializer):
         model = Hall
         fields = (
             'area', 'area_unit', 'carrying_capacity',
+            'payment_terms', 'unit_of_payment_terms',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
