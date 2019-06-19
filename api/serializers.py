@@ -8,17 +8,72 @@ from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
 from .models import (
-    Location, PropertyOwner, Phone, Service, Potential, Property, Feature,
+    Location, Contact, Phone, Service, Potential, Property, Feature,
     PropertyFeature, Picture, Room, House, Apartment, Hostel, Frame, Land,
     Hall, Office, Amenity
 )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class PrettyUpdate(object):
+    def update_related_field(self, instance, field, value):
+        setattr(instance, field+"_id", value)
+
+    def update_many_ralated_field(self, instance, field, value):
+        if isinstance(value, dict):
+            obj = getattr(instance, field)
+            for operator in value:
+                if operator == "add":
+                    obj.add(*value[operator])
+                elif operator == "remove":
+                    obj.remove(*value[operator])
+                else:
+                    message = (
+                        f"{operator} is an invalid operator, "
+                        "allowed operators are add and remove"
+                    )
+                    raise serializers.ValidationError(message)
+        elif isinstance(value, list):
+            getattr(instance, field).set(value)
+        else:
+            message = (
+                f"{field} value must be of type list or dict "
+                f"and not {type(value).__name__}"
+            )
+            raise serializers.ValidationError(message)
+
+    def pretty_update(self, instance, data):
+        for field in data:
+            field_type = self.get_fields()[field]
+            if isinstance(field_type, serializers.Serializer):
+                self.update_related_field(instance, field, data[field])
+            elif isinstance(field_type, serializers.ListSerializer):
+                self.update_many_ralated_field(instance, field, data[field])
+            else:
+                pass
+
+    def update(self, instance, validated_data):
+        """Pretty update """
+        request = self.context.get('request')
+        data = request.data
+        self.pretty_update(instance, data)
+        return super().update(instance, validated_data)
+
+
+class UserSerializer(PrettyUpdate, serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        style={'input_type': 'password'}
+    )
     class Meta:
         model = User
-        fields = ('id', 'url', 'username', 'email', 'groups')
+        fields = ('id', 'url', 'username', 'email', 'password', 'groups')
 
+    def create(self, validated_data):
+        username = validated_data.pop("username")
+        email = validated_data.pop("email")
+        password = validated_data.pop("password")
+        user = User.objects.create_user(username, email, password)
+        return user
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,23 +93,23 @@ class LocationSerializer(serializers.ModelSerializer):
 class PhoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Phone
-        fields = ('url', 'owner', 'number')
+        fields = ('url', 'contact', 'number')
 
 
-class PropertyOwnerSerializer(serializers.ModelSerializer):
-    phones = PhoneSerializer(many=True, read_only=False)
+class ContactSerializer(PrettyUpdate, serializers.ModelSerializer):
+    phones = PhoneSerializer(many=True, read_only=True)
     class Meta:
-        model = PropertyOwner
+        model = Contact
         fields = ('id', 'url', 'name', 'email', 'phones')
 
     def create(self, validated_data):
         phones = validated_data.pop('phones')
-        owner = PropertyOwner.objects.create(**validated_data)
-        owner.phones.set([
-            Phone.objects.create(owner=owner, number= phone["number"])
+        contact = Contact.objects.create(**validated_data)
+        contact.phones.set([
+            Phone.objects.create(owner=contact, number= phone["number"])
             for phone in phones
         ])
-        return owner
+        return contact
 
 
 class AmenitySerializer(serializers.ModelSerializer):
@@ -86,27 +141,27 @@ class FeatureSerializer(serializers.ModelSerializer):
         model = Feature
         fields = ('id', 'url', 'name')
 
-class PropertyFeatureSerializer(serializers.ModelSerializer):
-    feature = FeatureSerializer(many=False, read_only=False)
+class PropertyFeatureSerializer(PrettyUpdate, serializers.ModelSerializer):
+    feature = FeatureSerializer(many=False, read_only=True)
     class Meta:
         model = PropertyFeature
         fields = ('id', 'url', 'property', 'feature', 'value')
 
 
-class PropertySerializer(serializers.ModelSerializer):
+class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
     pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    amenities = AmenitySerializer(many=True, read_only=False)
-    services = ServiceSerializer(many=True, read_only=False)
-    potentials = PotentialSerializer(many=True, read_only=False)
-    owner = PropertyOwnerSerializer(many=False, read_only=False)
+    location = LocationSerializer(many=False, read_only=True)
+    amenities = AmenitySerializer(many=True, read_only=True)
+    services = ServiceSerializer(many=True, read_only=True)
+    potentials = PotentialSerializer(many=True, read_only=True)
+    contact = ContactSerializer(many=False, read_only=True)
     other_features = PropertyFeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Property
         fields = (
             'id', 'url', 'category', 'price', 'price_negotiation', 'rating',
             'currency', 'descriptions', 'location', 'owner', 'amenities',
-            'services', 'potentials', 'pictures', 'other_features',
+            'services', 'potentials', 'pictures', 'other_features', 'contact',
             'post_date'
         )
 
@@ -114,38 +169,37 @@ class PropertySerializer(serializers.ModelSerializer):
         """function for creating property """
         request = self.context.get('request')
         user = request.user
-        location = validated_data.pop('location')
-        owner = validated_data.pop('owner')
-        phones = owner.pop('phones')
-        amenities = validated_data.pop('amenities')
-        services = validated_data.pop('services')
-        potentials = validated_data.pop('potentials')
+        data = request.data
+        location = data.pop('location')
+        contact = data.pop('contact')
+        phones = contact.pop('phones', None)
+        amenities = data.pop('amenities', None)
+        services = data.pop('services', None)
+        potentials = data.pop('potentials', None)
 
         location = Location.objects.create(**location)
-        owner = PropertyOwner.objects.create(sys_user=user, **owner)
-        owner.phones.set([
-            Phone.objects.create(owner=owner, number= phone["number"])
+        contact = Contact.objects.create(**contact)
+        contact.phones.set([
+            Phone.objects.create(contact=contact, number=phone)
             for phone in phones
         ])
 
         instance = type(self).Meta.model
         property = instance.objects.create(
             location=location,
-            owner=owner,
+            owner=user,
+            contact=contact,
             **validated_data
         )
-        property.amenities.set([
-            Amenity.objects.create(name=amenity["name"])
-            for amenity in amenities
-        ])
-        property.services.set([
-            Service.objects.create(name=service["name"])
-            for service in services
-        ])
-        property.potentials.set([
-            Potential.objects.create(name=potential["name"])
-            for potential in potentials
-        ])
+
+        if amenities is not None:
+            property.amenities.set(amenities)
+
+        if services is not None:
+            property.services.set(services)
+
+        if potentials is not None:
+            property.potentials.set(potentials)
         return property
 
 
