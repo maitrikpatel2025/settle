@@ -142,6 +142,7 @@ dmypy.json
 
 ### VisualStudioCode ###
 .vscode/*
+XDG_CACHE_HOME/
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history

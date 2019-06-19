@@ -8,7 +8,7 @@ router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'location', views.LocationViewSet)
-router.register(r'property-owner', views.PropertyOwnerViewSet)
+router.register(r'contact', views.ContactViewSet)
 router.register(r'phone', views.PhoneViewSet)
 router.register(r'service', views.ServiceViewSet)
 router.register(r'potential', views.PotentialViewSet)
@@ -29,5 +29,5 @@ router.register(r'amenity', views.AmenityViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('api-token-auth/', auth_view.obtain_auth_token),
+    path('token-auth/', auth_view.obtain_auth_token),
 ]

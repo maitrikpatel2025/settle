@@ -53,10 +53,8 @@ class Location(models.Model):
         return f"{self.country}, {self.region}, {self.distric}, {self.street1}, {self.street2}"
 
 
-class PropertyOwner(models.Model):
+class Contact(models.Model):
     id = models.AutoField(primary_key=True)
-    # Property owner(for Object level permissions)
-    sys_user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
     email = models.CharField(max_length=256)
 
@@ -65,15 +63,15 @@ class PropertyOwner(models.Model):
 
 
 class Phone(models.Model):
-    # Owner field Should never be blank, work on this if you get time
-    # This is for the sake of create method in PropOwnerSerializer
-    owner = models.ForeignKey(
-        PropertyOwner,
+    id = models.AutoField(primary_key=True)
+    contact = models.ForeignKey(
+        Contact,
         on_delete=models.CASCADE,
         related_name="phones",
         blank=True,
+        null=True
     )
-    number = models.CharField(max_length=20, primary_key=True)
+    number = models.CharField(max_length=20)
 
     def __str__(self):
         return self.number
@@ -105,14 +103,15 @@ class Potential(models.Model):
 
 class Property(models.Model):
     id = models.AutoField(primary_key=True)
-    category = models.CharField(max_length=5, blank=False, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=5, choices=CATEGORY_CHOICES)
     price = models.FloatField()
-    price_negotiation = models.CharField(max_length=5, blank=True, choices=ANSWER_CHOICES)
     currency = models.CharField(max_length=256)
-    descriptions = models.TextField(blank=True)
+    price_negotiation = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
+    descriptions = models.TextField(blank=True, null=True)
     rating = models.SmallIntegerField(default=3, null=True)
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    owner = models.ForeignKey(PropertyOwner, on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+    location = models.ForeignKey(Location, blank=True, null=True, on_delete=models.CASCADE)
+    contact = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.CASCADE)
     amenities = models.ManyToManyField(Amenity, blank=True, related_name="properties")
     services = models.ManyToManyField(Service, blank=True, related_name="properties")
     potentials = models.ManyToManyField(Potential, blank=True, related_name="properties")
@@ -163,59 +162,59 @@ class Picture(models.Model):
 
 class Room(Property):
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True)
+    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
 
 
 class House(Property):
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True)
+    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
 
 
 class Apartment(Property):
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True)
+    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
 
 
 class Land(Property):
     width = models.FloatField(blank=True, null=True)
     length = models.FloatField(blank=True, null=True)
-    length_unit = models.CharField(max_length=10, blank=True)
+    length_unit = models.CharField(max_length=10, blank=True, null=True)
     area = models.FloatField(blank=True, null=True)
-    is_registered = models.CharField(max_length=5, choices=ANSWER_CHOICES, blank=True)
+    is_registered = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
 
 
 class Frame(Property):
     width = models.FloatField(blank=True, null=True)
     length = models.FloatField(blank=True, null=True)
-    length_unit = models.CharField(max_length=10, blank=True)
+    length_unit = models.CharField(max_length=10, blank=True, null=True)
     area = models.FloatField(blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True)
+    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
 
 
 class Office(Property):
     width = models.FloatField(blank=True, null=True)
     length = models.FloatField(blank=True, null=True)
-    length_unit = models.CharField(max_length=10, blank=True)
+    length_unit = models.CharField(max_length=10, blank=True, null=True)
     area = models.FloatField(blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True)
+    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
 
 
 class Hostel(Property):
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True)
+    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
 
 
 class Hall(Property):
     area = models.FloatField(blank=True, null=True)
-    area_unit = models.CharField(max_length=10, blank=True)
+    area_unit = models.CharField(max_length=10, blank=True, null=True)
     carrying_capacity = models.IntegerField(blank=True, null=True)
 
 
 class Feature(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=256, blank=True)
+    name = models.CharField(max_length=256, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -224,8 +223,8 @@ class Feature(models.Model):
 class PropertyFeature(models.Model):
     id = models.AutoField(primary_key=True)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='other_features')
-    feature = models.ForeignKey(Feature, on_delete=models.CASCADE, null=True)
-    value = models.CharField(max_length=256, blank=True)
+    feature = models.ForeignKey(Feature, blank=True, null=True, on_delete=models.CASCADE)
+    value = models.CharField(max_length=256, blank=True, null=True)
 
     def __str__(self):
         return self.feature.name

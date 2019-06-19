@@ -3,6 +3,8 @@ import itertools
 
 from django.db.models import Value
 from rest_framework import viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User, Group
 from django_restql.mixins import DynamicFieldsMixin
 from django.db.models.functions import Concat, Replace
@@ -10,13 +12,13 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 
 from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
 from .models import (
-    Location, PropertyOwner, Phone, Service, Potential, Property, Picture,
+    Location, Contact, Phone, Service, Potential, Property, Picture,
     Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature,
     PropertyFeature, Amenity
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
-    PropertyOwnerSerializer, PhoneSerializer, ServiceSerializer,
+    ContactSerializer, PhoneSerializer, ServiceSerializer,
     PotentialSerializer, PropertySerializer, PictureSerializer,
     RoomSerializer, HouseSerializer, ApartmentSerializer, HostelSerializer,
     FrameSerializer, LandSerializer, HallSerializer, OfficeSerializer,
@@ -44,11 +46,21 @@ class UserViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     """API endpoint that allows users to be viewed or edited."""
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAllowedUser)
+    permission_classes = (IsAllowedUser,)
     filter_fields = fields(
         'id', {'email': ['exact', 'icontains']},
         'groups', {'username': ['exact', 'icontains']}
     )
+
+    def get_queryset(self):
+        user = self.request.user
+        return super().get_queryset().filter(id=user.id)
+
+    def retrieve(self, request, pk=None):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=pk)
+        self.check_object_permissions(request, obj)
+        return super().retrieve(request, pk=pk)
 
 
 class GroupViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
@@ -70,10 +82,10 @@ class LocationViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     )
 
 
-class PropertyOwnerViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
-    """API endpoint that allows PropertyOwner to be viewed or edited."""
-    queryset = PropertyOwner.objects.all()
-    serializer_class = PropertyOwnerSerializer
+class ContactViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+    """API endpoint that allows Contact to be viewed or edited."""
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields(
         'id', 'name', {'email': ['exact', 'icontains']},
@@ -128,24 +140,17 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
         """Function for deleting property and its associated components"""
         property = self.queryset.get(pk=pk)
         location = property.location
-        owner = property.owner
-        phones = owner.phones
-        services = property.services
-        potentials = property.potentials
+        contact = property.contact
         pictures = property.pictures
-        other_features = property.other_features
+        phones = contact.phones
         phones.get_queryset().delete()
-        services.get_queryset().delete()
-        potentials.get_queryset().delete()
 
         # Don't use bulk deletion because it doesn't use overriden delete
         # on Picture Model, so with it picture files won't be deleted
         for picture in pictures.get_queryset():
             picture.delete()
 
-        other_features.get_queryset().delete()
         property.delete()
-        owner.delete()
         location.delete()
 
     def contains_lookup(self, request, queryset, field):
