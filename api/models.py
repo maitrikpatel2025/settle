@@ -10,11 +10,6 @@ from rest_framework.authtoken.models import Token
 
 # Create your models here.
 
-GENDER_CHOICES = (
-    ('M', 'Male'),
-    ('F', 'Female'),
-)
-
 CATEGORY_CHOICES = (
     ('sale', 'Sale'),
     ('rent', 'Rent'),
@@ -26,10 +21,6 @@ ANSWER_CHOICES = (
     ('N', 'NO'),
 )
 
-BATHROOM_CHOICES = (
-    ('Self Contained', 'Self Contained'),
-    ('Public', 'Public'),
-)
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
