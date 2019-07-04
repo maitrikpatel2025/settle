@@ -193,6 +193,7 @@ class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
         amenities = data.pop('amenities', None)
         services = data.pop('services', None)
         potentials = data.pop('potentials', None)
+        other_features = data.pop('other_features', None)
 
         location = Location.objects.create(**location)
         contact = Contact.objects.create(**contact)
@@ -217,6 +218,16 @@ class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
 
         if potentials is not None:
             property.potentials.set(potentials)
+
+        if other_features is not None:
+            for other_feature in other_features:
+                feature = Feature.objects.create(name=other_feature["name"])
+                property_feature = PropertyFeature.objects.create(
+                    property=property, 
+                    feature=feature, 
+                    value=other_feature["value"]
+                )
+
         return property
 
 
