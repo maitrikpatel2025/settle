@@ -1,7 +1,8 @@
 import json
 
 from django.db.models import Value
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User, Group
 from django_restql.mixins import DynamicFieldsMixin
@@ -136,7 +137,7 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
 
     def destroy(self, request, pk=None):
         """Function for deleting property and its associated components"""
-        property = self.queryset.get(pk=pk)
+        property = get_object_or_404(self.queryset, pk=pk)
         location = property.location
         contact = property.contact
         pictures = property.pictures
@@ -150,6 +151,8 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
 
         property.delete()
         location.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
     def contains_lookup(self, request, queryset, field):
         if request.GET.get(field) is not None:
