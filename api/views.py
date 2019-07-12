@@ -4,9 +4,11 @@ from django.db.models import Value
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User, Group
 from django_restql.mixins import DynamicFieldsMixin
 from django.db.models.functions import Concat, Replace
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
@@ -39,6 +41,22 @@ def fields(*args):
             raise Exception("Invalid formating of lookup field")
 
     return lookup_fields
+
+
+class AuthToken(ObtainAuthToken):
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'id': user.pk,
+            'username': user.username,
+            'email': user.email
+        })
 
 
 class UserViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
