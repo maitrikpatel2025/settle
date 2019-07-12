@@ -29,5 +29,5 @@ router.register(r'amenity', views.AmenityViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('token-auth/', auth_view.obtain_auth_token),
+    path('token-auth/', views.AuthToken.as_view()),
 ]
