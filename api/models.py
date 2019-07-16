@@ -46,24 +46,10 @@ class Contact(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=256)
     email = models.CharField(max_length=256)
+    phone = models.CharField(max_length=256)
 
     def __str__(self):
         return self.name
-
-
-class Phone(models.Model):
-    id = models.AutoField(primary_key=True)
-    contact = models.ForeignKey(
-        Contact,
-        on_delete=models.CASCADE,
-        related_name="phones",
-        blank=True,
-        null=True
-    )
-    number = models.CharField(max_length=20)
-
-    def __str__(self):
-        return self.number
 
 
 class Amenity(models.Model):
@@ -105,6 +91,7 @@ class Property(models.Model):
     services = models.ManyToManyField(Service, blank=True, related_name="properties")
     potentials = models.ManyToManyField(Potential, blank=True, related_name="properties")
     post_date = models.DateTimeField(auto_now_add=True)
+    prop_type = models.CharField(max_length=256, default="generic")
 
     def __str__(self):
         return (
@@ -203,17 +190,9 @@ class Hall(Property):
 
 class Feature(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=256, blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-
-class PropertyFeature(models.Model):
-    id = models.AutoField(primary_key=True)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='other_features')
-    feature = models.ForeignKey(Feature, blank=True, null=True, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256, blank=True, null=True)
     value = models.CharField(max_length=256, blank=True, null=True)
 
     def __str__(self):
-        return self.feature.name
+        return self.name

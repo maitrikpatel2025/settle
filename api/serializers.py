@@ -2,8 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
 from .models import (
-    Location, Contact, Phone, Service, Potential, Property, Feature,
-    PropertyFeature, Picture, Room, House, Apartment, Hostel, Frame, Land,
+    Location, Contact, Service, Potential, Property, Feature,
+    Picture, Room, House, Apartment, Hostel, Frame, Land,
     Hall, Office, Amenity
 )
 
@@ -19,7 +19,7 @@ class PrettyUpdate(object):
             message = self.constrain_error_prefix(field) + str(e)
             raise serializers.ValidationError(message)
 
-    def update_many_ralated_field(self, instance, field, value):
+    def update_many_to_many_ralated_field(self, instance, field, value):
         if isinstance(value, dict):
             obj = getattr(instance, field)
             for operator in value:
@@ -54,13 +54,46 @@ class PrettyUpdate(object):
             )
             raise serializers.ValidationError(message)
 
+    def update_one_to_many_ralated_field(self, instance, field, value):
+        if isinstance(value, dict):
+            obj = getattr(instance, field)
+            for operator in value:
+                if operator == "delete":
+                    try:
+                        obj.filter(pk__in=value[operator]).delete()
+                    except Exception as e:
+                        message = self.constrain_error_prefix(field) + str(e)
+                        raise serializers.ValidationError(message)
+                else:
+                    message = (
+                        f"{operator} is an invalid operator, "
+                        "allowed operators are 'add' and 'delete'"
+                    )
+                    raise serializers.ValidationError(message)
+        elif isinstance(value, list):
+            try:
+                getattr(instance, field).set(value)
+            except Exception as e:
+                message = self.constrain_error_prefix(field) + str(e)
+                raise serializers.ValidationError(message)
+        else:
+            message = (
+                f"{field} value must be of type list or dict "
+                f"and not {type(value).__name__}"
+            )
+            raise serializers.ValidationError(message)
+
     def pretty_update(self, instance, data):
         for field in data:
             field_type = self.get_fields()[field]
             if isinstance(field_type, serializers.Serializer):
                 self.update_related_field(instance, field, data[field])
             elif isinstance(field_type, serializers.ListSerializer):
-                self.update_many_ralated_field(instance, field, data[field])
+                relation = getattr(instance, field).__class__.__name__
+                if relation == "ManyRelatedManager":
+                    self.update_many_to_many_ralated_field(instance, field, data[field])
+                if relation == "RelatedManager":
+                    self.update_one_to_many_ralated_field(instance, field, data[field])
             else:
                 pass
 
@@ -107,31 +140,15 @@ class LocationSerializer(serializers.ModelSerializer):
         )
 
 
-class PhoneSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Phone
-        fields = ('url', 'contact', 'number')
-
-
 class ContactSerializer(PrettyUpdate, serializers.ModelSerializer):
-    phones = PhoneSerializer(many=True, read_only=True)
     class Meta:
         model = Contact
-        fields = ('id', 'url', 'name', 'email', 'phones')
-
-    def create(self, validated_data):
-        phones = validated_data.pop('phones')
-        contact = Contact.objects.create(**validated_data)
-        contact.phones.set([
-            Phone.objects.create(owner=contact, number= phone["number"])
-            for phone in phones
-        ])
-        return contact
+        fields = ('id', 'url', 'name', 'email', 'phone')
 
 
 class AmenitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Service
+        model = Amenity
         fields = ('id', 'url', 'name')
 
 
@@ -153,16 +170,10 @@ class PictureSerializer(serializers.ModelSerializer):
         fields = ('id', 'url', 'is_main', 'property', 'tooltip', 'src')
 
 
-class FeatureSerializer(serializers.ModelSerializer):
+class FeatureSerializer(PrettyUpdate, serializers.ModelSerializer):
     class Meta:
         model = Feature
-        fields = ('id', 'url', 'name')
-
-class PropertyFeatureSerializer(PrettyUpdate, serializers.ModelSerializer):
-    feature = FeatureSerializer(many=False, read_only=True)
-    class Meta:
-        model = PropertyFeature
-        fields = ('id', 'url', 'property', 'feature', 'value')
+        fields = ('id', 'url', 'property', 'name', 'value')
 
 
 class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
@@ -172,24 +183,24 @@ class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=True)
     potentials = PotentialSerializer(many=True, read_only=True)
     contact = ContactSerializer(many=False, read_only=True)
-    other_features = PropertyFeatureSerializer(many=True, read_only=True)
+    other_features = FeatureSerializer(many=True, read_only=True)
     class Meta:
         model = Property
         fields = (
             'id', 'url', 'category', 'price', 'price_negotiation', 'rating',
             'currency', 'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features', 'contact',
-            'post_date'
+            'post_date', 'prop_type'
         )
 
     def create(self, validated_data):
         """function for creating property """
         request = self.context.get('request')
+        prop_type = request.path.strip().split("/")[-2]
         user = request.user
         data = request.data
         location = data.pop('location')
         contact = data.pop('contact')
-        phones = contact.pop('phones', None)
         amenities = data.pop('amenities', None)
         services = data.pop('services', None)
         potentials = data.pop('potentials', None)
@@ -197,16 +208,13 @@ class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
 
         location = Location.objects.create(**location)
         contact = Contact.objects.create(**contact)
-        contact.phones.set([
-            Phone.objects.create(contact=contact, number=phone)
-            for phone in phones
-        ])
 
         instance = type(self).Meta.model
         property = instance.objects.create(
             location=location,
             owner=user,
             contact=contact,
+            prop_type=prop_type,
             **validated_data
         )
 
@@ -221,11 +229,9 @@ class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
 
         if other_features is not None:
             for other_feature in other_features:
-                feature = Feature.objects.create(name=other_feature["name"])
-                property_feature = PropertyFeature.objects.create(
+                Feature.objects.create(
                     property=property, 
-                    feature=feature, 
-                    value=other_feature["value"]
+                    **other_feature
                 )
 
         return property

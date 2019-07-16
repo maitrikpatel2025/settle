@@ -13,17 +13,15 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 
 from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
 from .models import (
-    Location, Contact, Phone, Service, Potential, Property, Picture,
-    Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature,
-    PropertyFeature, Amenity
+    Location, Contact, Service, Potential, Property, Picture, Room, House, 
+    Apartment, Hostel, Frame, Land, Hall, Office, Feature, Amenity
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
-    ContactSerializer, PhoneSerializer, ServiceSerializer,
-    PotentialSerializer, PropertySerializer, PictureSerializer,
-    RoomSerializer, HouseSerializer, ApartmentSerializer, HostelSerializer,
-    FrameSerializer, LandSerializer, HallSerializer, OfficeSerializer,
-    AmenitySerializer, PropertyFeatureSerializer
+    ContactSerializer, ServiceSerializer, PotentialSerializer,
+    PropertySerializer, PictureSerializer, RoomSerializer, HouseSerializer,
+    ApartmentSerializer, HostelSerializer, FrameSerializer, LandSerializer,
+    HallSerializer, OfficeSerializer, AmenitySerializer
 )
 
 
@@ -106,16 +104,8 @@ class ContactViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields(
         'id', 'name', {'email': ['exact', 'icontains']},
-        'phones',
+        'phone',
     )
-
-
-class PhoneViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
-    """API endpoint that allows Phone to be viewed or edited."""
-    queryset = Phone.objects.all()
-    serializer_class = PhoneSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_fields = fields('owner', 'number')
 
 
 class AmenityViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
@@ -159,8 +149,6 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
         location = property.location
         contact = property.contact
         pictures = property.pictures
-        phones = contact.phones
-        phones.get_queryset().delete()
 
         # Don't use bulk deletion because it doesn't use overriden delete
         # on Picture Model, so with it picture files won't be deleted
@@ -169,6 +157,7 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
 
         property.delete()
         location.delete()
+        contact.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -288,16 +277,8 @@ class HallViewSet(PropertyViewSet):
 
 
 class FeatureViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
-    """API endpoint that allows Feature to be viewed or edited."""
-    queryset = Feature.objects.all().order_by('-name')
+    """API endpoint that allows PropertyFeature to be viewed or edited."""
+    queryset = Feature.objects.all().order_by('-id')
     serializer_class = FeatureSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_fields = fields('id', 'name')
-
-
-class PropertyFeatureViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
-    """API endpoint that allows PropertyFeature to be viewed or edited."""
-    queryset = PropertyFeature.objects.all().order_by('-id')
-    serializer_class = PropertyFeatureSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_fields = fields('id', 'property', 'value')
+    filter_fields = fields('id', 'property', 'name', 'value')
