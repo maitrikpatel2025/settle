@@ -142,6 +142,13 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
         'price_negotiation', 'currency', 'location', 'owner',
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
+    search_fields = [
+        'location__country',
+        'location__region',
+        'location__distric',
+        'location__street1',
+        'location__street2'
+    ]
 
     def destroy(self, request, pk=None):
         """Function for deleting property and its associated components"""
@@ -170,26 +177,12 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
                 queryset = queryset.filter(**lookup)
         return queryset
 
-    def location_lookup(self, request, queryset, field):
-        # If there is no location(loc) parameter on request params
-        if request.GET.get(field) is not None:
-            keyword = request.GET[field].replace(' ', '').replace(',', '')
-            queryset = queryset.annotate(full_location=Replace(Concat(
-                'location__country',
-                'location__region',
-                'location__distric',
-                'location__street1',
-                'location__street2'
-            ), Value(' '), Value(''))).filter(full_location__icontains=keyword)
-        return queryset
-
     def filter_queryset(self, queryset):
         """Do a custom search of location in every field of Location model"""
         request = self.request
         for backend in self.filter_backends:
             queryset = backend().filter_queryset(request, queryset, self)
 
-        queryset = self.location_lookup(request, queryset, "loc")
         queryset = self.contains_lookup(request, queryset, "services__contains")
         queryset = self.contains_lookup(request, queryset, "amenities__contains")
         queryset = self.contains_lookup(request, queryset, "potentials__contains")

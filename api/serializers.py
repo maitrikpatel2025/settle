@@ -178,12 +178,13 @@ class FeatureSerializer(PrettyUpdate, serializers.ModelSerializer):
 
 class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
     pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=True)
+    location = LocationSerializer(many=False, read_only=False)
     amenities = AmenitySerializer(many=True, read_only=True)
     services = ServiceSerializer(many=True, read_only=True)
     potentials = PotentialSerializer(many=True, read_only=True)
-    contact = ContactSerializer(many=False, read_only=True)
-    other_features = FeatureSerializer(many=True, read_only=True)
+    contact = ContactSerializer(many=False, read_only=False)
+    other_features = FeatureSerializer(many=True, read_only=False, required=False)
+    owner = UserSerializer(many=False, read_only=True)
     class Meta:
         model = Property
         fields = (
@@ -199,12 +200,12 @@ class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
         prop_type = request.path.strip().split("/")[-2]
         user = request.user
         data = request.data
-        location = data.pop('location')
-        contact = data.pop('contact')
+        location = validated_data.pop('location')
+        contact = validated_data.pop('contact')
         amenities = data.pop('amenities', None)
         services = data.pop('services', None)
         potentials = data.pop('potentials', None)
-        other_features = data.pop('other_features', None)
+        other_features = validated_data.pop('other_features', None)
 
         location = Location.objects.create(**location)
         contact = Contact.objects.create(**contact)
