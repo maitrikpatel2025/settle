@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User, Group
-from django_restql.mixins import DynamicFieldsMixin
 from django.db.models.functions import Concat, Replace
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -42,7 +41,7 @@ def fields(*args):
 
 
 class AuthToken(ObtainAuthToken):
-
+    """API endpoint that allows users to obtain API token/key."""
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
@@ -57,7 +56,7 @@ class AuthToken(ObtainAuthToken):
         })
 
 
-class UserViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     """API endpoint that allows users to be viewed or edited."""
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
@@ -78,7 +77,7 @@ class UserViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
         return super().retrieve(request, pk=pk)
 
 
-class GroupViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class GroupViewSet(viewsets.ModelViewSet):
     """API endpoint that allows groups to be viewed or edited."""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
@@ -86,7 +85,7 @@ class GroupViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     filter_fields = fields('id', 'name')
 
 
-class LocationViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class LocationViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Location to be viewed or edited."""
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
@@ -97,7 +96,7 @@ class LocationViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     )
 
 
-class ContactViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class ContactViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Contact to be viewed or edited."""
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
@@ -108,7 +107,7 @@ class ContactViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     )
 
 
-class AmenityViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class AmenityViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Amenity to be viewed or edited."""
     queryset = Amenity.objects.all()
     serializer_class = AmenitySerializer
@@ -116,7 +115,7 @@ class AmenityViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     filter_fields = fields('id', 'name')
 
 
-class ServiceViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class ServiceViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Service to be viewed or edited."""
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
@@ -124,7 +123,7 @@ class ServiceViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     filter_fields = fields('id', 'name')
 
 
-class PotentialViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class PotentialViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Potential to be viewed or edited."""
     queryset = Potential.objects.all()
     serializer_class = PotentialSerializer
@@ -132,7 +131,7 @@ class PotentialViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     filter_fields = fields('id', 'name')
 
 
-class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class PropertyViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Property to be viewed or edited."""
     queryset = Property.objects.all().order_by('-post_date')
     serializer_class = PropertySerializer
@@ -140,6 +139,7 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
     filter_fields = fields(
         'id',  'category', {'price': ['exact', 'lt', 'gt']},
         'price_negotiation', 'currency', 'location', 'owner',
+        {'contact': ['exact', 'in']},
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
     search_fields = [
@@ -167,7 +167,6 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
         contact.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
     def contains_lookup(self, request, queryset, field):
         if request.GET.get(field) is not None:
             value = json.loads(request.GET[field])
@@ -189,7 +188,7 @@ class PropertyViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
         return queryset
 
 
-class PictureViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class PictureViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Picture to be viewed or edited."""
     queryset = Picture.objects.all()
     serializer_class = PictureSerializer
@@ -215,6 +214,7 @@ class HouseViewSet(PropertyViewSet):
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
+
 class ApartmentViewSet(PropertyViewSet):
     """API endpoint that allows Apartment to be viewed or edited."""
     queryset = Apartment.objects.all().order_by('-post_date')
@@ -223,6 +223,7 @@ class ApartmentViewSet(PropertyViewSet):
         'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
+
 
 class LandViewSet(PropertyViewSet):
     """API endpoint that allows Land to be viewed or edited."""
@@ -251,6 +252,7 @@ class OfficeViewSet(PropertyViewSet):
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
+
 class HostelViewSet(PropertyViewSet):
     """API endpoint that allows Hostel to be viewed or edited."""
     queryset = Hostel.objects.all().order_by('-post_date')
@@ -269,7 +271,7 @@ class HallViewSet(PropertyViewSet):
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 
-class FeatureViewSet(DynamicFieldsMixin, viewsets.ModelViewSet):
+class FeatureViewSet(viewsets.ModelViewSet):
     """API endpoint that allows PropertyFeature to be viewed or edited."""
     queryset = Feature.objects.all().order_by('-id')
     serializer_class = FeatureSerializer
