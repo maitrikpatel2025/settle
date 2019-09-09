@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
+from django_restql.mixins import DynamicFieldsMixin
+from drf_pretty_update.fields import NestedField
+from drf_pretty_update.serializers import NestedModelSerializer
 
 from .models import (
     Location, Contact, Service, Potential, Property, Feature,
@@ -8,108 +11,7 @@ from .models import (
 )
 
 
-class PrettyUpdate(object):
-    def constrain_error_prefix(self, field):
-        return f"Error on {field} field: "
-
-    def update_related_field(self, instance, field, value):
-        try:
-            setattr(instance, field+"_id", value)
-        except Exception as e:
-            message = self.constrain_error_prefix(field) + str(e)
-            raise serializers.ValidationError(message)
-
-    def update_many_to_many_ralated_field(self, instance, field, value):
-        if isinstance(value, dict):
-            obj = getattr(instance, field)
-            for operator in value:
-                if operator == "add":
-                    try:
-                        obj.add(*value[operator])
-                    except Exception as e:
-                        message = self.constrain_error_prefix(field) + str(e)
-                        raise serializers.ValidationError(message)
-                elif operator == "remove":
-                    try:
-                        obj.remove(*value[operator])
-                    except Exception as e:
-                        message = self.constrain_error_prefix(field) + str(e)
-                        raise serializers.ValidationError(message)
-                else:
-                    message = (
-                        f"{operator} is an invalid operator, "
-                        "allowed operators are 'add' and 'remove'"
-                    )
-                    raise serializers.ValidationError(message)
-        elif isinstance(value, list):
-            try:
-                getattr(instance, field).set(value)
-            except Exception as e:
-                message = self.constrain_error_prefix(field) + str(e)
-                raise serializers.ValidationError(message)
-        else:
-            message = (
-                f"{field} value must be of type list or dict "
-                f"and not {type(value).__name__}"
-            )
-            raise serializers.ValidationError(message)
-
-    def update_one_to_many_ralated_field(self, instance, field, value):
-        if isinstance(value, dict):
-            obj = getattr(instance, field)
-            for operator in value:
-                if operator == "delete":
-                    try:
-                        obj.filter(pk__in=value[operator]).delete()
-                    except Exception as e:
-                        message = self.constrain_error_prefix(field) + str(e)
-                        raise serializers.ValidationError(message)
-                else:
-                    message = (
-                        f"{operator} is an invalid operator, "
-                        "allowed operators are 'add' and 'delete'"
-                    )
-                    raise serializers.ValidationError(message)
-        elif isinstance(value, list):
-            try:
-                getattr(instance, field).set(value)
-            except Exception as e:
-                message = self.constrain_error_prefix(field) + str(e)
-                raise serializers.ValidationError(message)
-        else:
-            message = (
-                f"{field} value must be of type list or dict "
-                f"and not {type(value).__name__}"
-            )
-            raise serializers.ValidationError(message)
-
-    def pretty_update(self, instance, data):
-        for field in data:
-            field_type = self.get_fields()[field]
-            if isinstance(field_type, serializers.Serializer):
-                self.update_related_field(instance, field, data[field])
-            elif isinstance(field_type, serializers.ListSerializer):
-                relation = getattr(instance, field).__class__.__name__
-                if relation == "ManyRelatedManager":
-                    self.update_many_to_many_ralated_field(instance, field, data[field])
-                if relation == "RelatedManager":
-                    self.update_one_to_many_ralated_field(instance, field, data[field])
-            else:
-                pass
-
-    def update(self, instance, validated_data):
-        """Pretty update """
-        request = self.context.get('request')
-        data = request.data
-        self.pretty_update(instance, data)
-        try:
-            return super().update(instance, validated_data)
-        except Exception as e:
-            message = str(e)
-            raise serializers.ValidationError(e)
-
-
-class UserSerializer(PrettyUpdate, serializers.ModelSerializer):
+class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
         style={'input_type': 'password'}
@@ -125,13 +27,14 @@ class UserSerializer(PrettyUpdate, serializers.ModelSerializer):
         user = User.objects.create_user(username, email, password)
         return user
 
-class GroupSerializer(serializers.ModelSerializer):
+
+class GroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ('id', 'url', 'name')
 
 
-class LocationSerializer(serializers.ModelSerializer):
+class LocationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = (
@@ -140,50 +43,53 @@ class LocationSerializer(serializers.ModelSerializer):
         )
 
 
-class ContactSerializer(PrettyUpdate, serializers.ModelSerializer):
+class ContactSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = ('id', 'url', 'name', 'email', 'phone')
 
 
-class AmenitySerializer(serializers.ModelSerializer):
+class AmenitySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Amenity
         fields = ('id', 'url', 'name')
 
 
-class ServiceSerializer(serializers.ModelSerializer):
+class ServiceSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ('id', 'url', 'name')
 
 
-class PotentialSerializer(serializers.ModelSerializer):
+class PotentialSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Potential
         fields = ('id', 'url', 'name')
 
 
-class PictureSerializer(serializers.ModelSerializer):
+class PictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Picture
         fields = ('id', 'url', 'is_main', 'property', 'tooltip', 'src')
 
 
-class FeatureSerializer(PrettyUpdate, serializers.ModelSerializer):
+class FeatureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Feature
         fields = ('id', 'url', 'property', 'name', 'value')
 
 
-class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
+class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
     pictures = PictureSerializer(many=True, read_only=True)
-    location = LocationSerializer(many=False, read_only=False)
-    amenities = AmenitySerializer(many=True, read_only=True)
-    services = ServiceSerializer(many=True, read_only=True)
-    potentials = PotentialSerializer(many=True, read_only=True)
-    contact = ContactSerializer(many=False, read_only=False)
-    other_features = FeatureSerializer(many=True, read_only=False, required=False)
+    location = NestedField(LocationSerializer, many=False)
+    amenities = NestedField(AmenitySerializer, many=True, required=False)
+    services = NestedField(ServiceSerializer, many=True, required=False)
+    potentials = NestedField(PotentialSerializer, many=True, required=False)
+    contact = NestedField(ContactSerializer, many=False, required=False)
+    other_features = NestedField(FeatureSerializer, 
+        many=True, required=False, create_ops=["create"], 
+        update_ops=["update", "create", "remove"]
+    )
     owner = UserSerializer(many=False, read_only=True)
     class Meta:
         model = Property
@@ -199,42 +105,9 @@ class PropertySerializer(PrettyUpdate, serializers.ModelSerializer):
         request = self.context.get('request')
         prop_type = request.path.strip().split("/")[-2]
         user = request.user
-        data = request.data
-        location = validated_data.pop('location')
-        contact = validated_data.pop('contact')
-        amenities = data.pop('amenities', None)
-        services = data.pop('services', None)
-        potentials = data.pop('potentials', None)
-        other_features = validated_data.pop('other_features', None)
 
-        location = Location.objects.create(**location)
-        contact = Contact.objects.create(**contact)
-
-        instance = type(self).Meta.model
-        property = instance.objects.create(
-            location=location,
-            owner=user,
-            contact=contact,
-            prop_type=prop_type,
-            **validated_data
-        )
-
-        if amenities is not None:
-            property.amenities.set(amenities)
-
-        if services is not None:
-            property.services.set(services)
-
-        if potentials is not None:
-            property.potentials.set(potentials)
-
-        if other_features is not None:
-            for other_feature in other_features:
-                Feature.objects.create(
-                    property=property, 
-                    **other_feature
-                )
-
+        validated_data.update({"owner": user, "prop_type": prop_type})
+        property = super().create(validated_data)
         return property
 
 
