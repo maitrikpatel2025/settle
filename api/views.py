@@ -10,7 +10,7 @@ from django.db.models.functions import Concat, Replace
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
-from api.permissions import IsOwnerOrReadOnly, IsAllowedUser
+from api.permissions import IsOwnerOrReadOnly, IsAllowedUser, HasGroupPermission
 from .models import (
     Location, Contact, Service, Potential, Property, Picture, Room, House, 
     Apartment, Hostel, Frame, Land, Hall, Office, Feature, Amenity
@@ -40,27 +40,52 @@ def fields(*args):
     return lookup_fields
 
 
-class AuthToken(ObtainAuthToken):
-    """API endpoint that allows users to obtain API token/key."""
+class AuthenticateUser(ObtainAuthToken):
+    """API endpoint that allows users to login and obtain auth token."""
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
-        return Response({
+        user_serializer = UserSerializer(user, context={'request': request})
+        data = {
             'token': token.key,
-            'id': user.pk,
-            'username': user.username,
-            'email': user.email
-        })
+            **user_serializer.data
+        }
+        return Response(data)
+
+
+class RegisterUser(ObtainAuthToken):
+    """API endpoint that allows users to register and obtain auth token."""
+    def post(self, request, *args, **kwargs):
+        serializer = UserSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        username = data.pop("username")
+        email = data.pop("email", "")
+        password = data.pop("password")
+        user = User.objects.create_user(username, email, password)
+        user.save()
+        token, created = Token.objects.get_or_create(user=user)
+        user_serializer = UserSerializer(user, context={'request': request})
+        data = {
+            'token': token.key,
+            **user_serializer.data
+        }
+        return Response(data)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """API endpoint that allows users to be viewed or edited."""
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = (IsAllowedUser,)
+    permission_classes = (IsAllowedUser, HasGroupPermission)
     filter_fields = fields(
         'id', {'email': ['exact', 'icontains']},
         'groups', {'username': ['exact', 'icontains']}
@@ -133,7 +158,14 @@ class PotentialViewSet(viewsets.ModelViewSet):
 
 class PropertyViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Property to be viewed or edited."""
-    queryset = Property.objects.all().order_by('-post_date')
+    queryset = Property.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = PropertySerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
@@ -197,7 +229,14 @@ class PictureViewSet(viewsets.ModelViewSet):
 
 class RoomViewSet(PropertyViewSet):
     """API endpoint that allows Room to be viewed or edited."""
-    queryset = Room.objects.all().order_by('-post_date')
+    queryset = Room.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = RoomSerializer
     filter_fields = fields(
         'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
@@ -207,7 +246,14 @@ class RoomViewSet(PropertyViewSet):
 
 class HouseViewSet(PropertyViewSet):
     """API endpoint that allows House to be viewed or edited."""
-    queryset = House.objects.all().order_by('-post_date')
+    queryset = House.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = HouseSerializer
     filter_fields = fields(
         'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
@@ -217,7 +263,14 @@ class HouseViewSet(PropertyViewSet):
 
 class ApartmentViewSet(PropertyViewSet):
     """API endpoint that allows Apartment to be viewed or edited."""
-    queryset = Apartment.objects.all().order_by('-post_date')
+    queryset = Apartment.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = ApartmentSerializer
     filter_fields = fields(
         'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
@@ -227,7 +280,14 @@ class ApartmentViewSet(PropertyViewSet):
 
 class LandViewSet(PropertyViewSet):
     """API endpoint that allows Land to be viewed or edited."""
-    queryset = Land.objects.all().order_by('-post_date')
+    queryset = Land.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = LandSerializer
     filter_fields = fields()
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
@@ -235,7 +295,14 @@ class LandViewSet(PropertyViewSet):
 
 class FrameViewSet(PropertyViewSet):
     """API endpoint that allows Frame to be viewed or edited."""
-    queryset = Frame.objects.all().order_by('-post_date')
+    queryset = Frame.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = FrameSerializer
     filter_fields = fields(
         'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
@@ -245,7 +312,14 @@ class FrameViewSet(PropertyViewSet):
 
 class OfficeViewSet(PropertyViewSet):
     """API endpoint that allows Office to be viewed or edited."""
-    queryset = Office.objects.all().order_by('-post_date')
+    queryset = Office.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = OfficeSerializer
     filter_fields = fields(
         'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
@@ -255,7 +329,14 @@ class OfficeViewSet(PropertyViewSet):
 
 class HostelViewSet(PropertyViewSet):
     """API endpoint that allows Hostel to be viewed or edited."""
-    queryset = Hostel.objects.all().order_by('-post_date')
+    queryset = Hostel.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = HostelSerializer
     filter_fields = fields(
         'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
@@ -265,7 +346,14 @@ class HostelViewSet(PropertyViewSet):
 
 class HallViewSet(PropertyViewSet):
     """API endpoint that allows Hall to be viewed or edited."""
-    queryset = Hall.objects.all().order_by('-post_date')
+    queryset = Hall.objects.all().order_by(
+        '-post_date'
+    ).select_related(
+        'location', 'contact', 'owner'
+    ).prefetch_related(
+        'pictures', 'amenities', 'services', 
+        'potentials', 'other_features'
+    )
     serializer_class = HallSerializer
     filter_fields = fields()
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
