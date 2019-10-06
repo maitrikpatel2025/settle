@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 from django_restql.mixins import DynamicFieldsMixin
-from drf_pretty_update.fields import NestedField
-from drf_pretty_update.serializers import NestedModelSerializer
+from django_restql.fields import NestedField
+from django_restql.serializers import NestedModelSerializer
 
 from .models import (
     Location, Contact, Service, Potential, Property, Feature,
@@ -19,14 +19,10 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'url', 'username', 'email', 'password', 'groups')
-
-    def create(self, validated_data):
-        username = validated_data.pop("username")
-        email = validated_data.pop("email")
-        password = validated_data.pop("password")
-        user = User.objects.create_user(username, email, password)
-        return user
-
+        read_only_fields = (
+            'date_joined', 'is_staff'
+        )
+        
 
 class GroupSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
@@ -86,8 +82,8 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
     services = NestedField(ServiceSerializer, many=True, required=False)
     potentials = NestedField(PotentialSerializer, many=True, required=False)
     contact = NestedField(ContactSerializer, many=False, required=False)
-    other_features = NestedField(FeatureSerializer, 
-        many=True, required=False, create_ops=["create"], 
+    other_features = NestedField(FeatureSerializer,
+        many=True, required=False, create_ops=["create"],
         update_ops=["update", "create", "remove"]
     )
     owner = UserSerializer(many=False, read_only=True)
