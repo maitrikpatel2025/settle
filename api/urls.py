@@ -27,5 +27,6 @@ router.register(r'amenity', views.AmenityViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('token-auth/', views.AuthToken.as_view()),
+    path('auth/', views.AuthenticateUser.as_view()),
+    path('register/', views.RegisterUser.as_view())
 ]
