@@ -86,6 +86,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = (IsAllowedUser, HasGroupPermission)
+    http_method_names = ['get', 'put', 'patch', 'head', 'delete']
     filter_fields = fields(
         'id', {'email': ['exact', 'icontains']},
         'groups', {'username': ['exact', 'icontains']}
