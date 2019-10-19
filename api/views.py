@@ -202,10 +202,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
     def contains_lookup(self, request, queryset, field):
         if request.GET.get(field) is not None:
-            value = json.loads(request.GET[field])
+            ids = json.loads(request.GET[field])
             field = field.replace("__contains", "__in")
-            lookup = {field: value}
-            for field in value:
+            for id in ids:
+                lookup = {field: [id]}
                 queryset = queryset.filter(**lookup)
         return queryset
 
