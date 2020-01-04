@@ -178,7 +178,7 @@ class PropertyViewSet(EagerLoadingMixin, viewsets.ModelViewSet):
     serializer_class = PropertySerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
-        'id',  'category', {'price': ['exact', 'lt', 'gt']},
+        'id',  'available_for', {'price': ['exact', 'lt', 'gt']},
         'price_negotiation', 'currency', 'location', 'owner',
         {'contact': ['exact', 'in']},
         {'post_date': ['exact', 'lt', 'gt', 'range']},
