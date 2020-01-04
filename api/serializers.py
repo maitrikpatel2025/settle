@@ -87,22 +87,22 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
         update_ops=["update", "create", "remove"]
     )
     owner = UserSerializer(many=False, read_only=True)
+    type = serializers.CharField(read_only=True)
     class Meta:
         model = Property
         fields = (
-            'id', 'url', 'category', 'price', 'price_negotiation', 'rating',
+            'id', 'url', 'available_for', 'price', 'price_negotiation', 'rating',
             'currency', 'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features', 'contact',
-            'post_date', 'prop_type'
+            'post_date', 'type'
         )
 
     def create(self, validated_data):
-        """function for creating property """
+        """function for creating a property """
         request = self.context.get('request')
-        prop_type = request.path.strip().split("/")[-2]
         user = request.user
 
-        validated_data.update({"owner": user, "prop_type": prop_type})
+        validated_data.update({"owner": user})
         property = super().create(validated_data)
         return property
 
