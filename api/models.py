@@ -78,6 +78,7 @@ class Potential(models.Model):
 
 class Property(models.Model):
     id = models.AutoField(primary_key=True)
+    type = models.CharField(max_length=256, editable=False, default="generic")
     available_for = models.CharField(max_length=5, choices=AVAILABLE_FOR_CHOICES)
     price = models.FloatField()
     currency = models.CharField(max_length=256)
@@ -91,7 +92,6 @@ class Property(models.Model):
     services = models.ManyToManyField(Service, blank=True, related_name="properties")
     potentials = models.ManyToManyField(Potential, blank=True, related_name="properties")
     post_date = models.DateTimeField(auto_now_add=True)
-    type = models.CharField(max_length=256, editable=False, default="generic")
 
     def __str__(self):
         return (
