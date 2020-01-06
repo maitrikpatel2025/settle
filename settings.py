@@ -158,6 +158,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
+STATIC_ROOT = './media'
 STATIC_URL = '/static/'  #this is for every static file within django application
-MEDIA_ROOT = '/home/yezy/Projects/personal/settle/media/'
+MEDIA_ROOT = './media/'
 MEDIA_URL = '/media/'
