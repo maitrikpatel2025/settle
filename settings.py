@@ -83,7 +83,20 @@ WSGI_APPLICATION = 'wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
+    'default': dj_database_url.config(
+        'postgres://mqyodaivqzilfn:18af1d49b766bcfca20b6d2ad208948dbb87794c0a23bc5c12b46074d942b95e@ec2-174-129-33-75.compute-1.amazonaws.com:5432/d69dj4gcl565j7',
+        conn_max_age=600, 
+        ssl_require=True
+    )
+
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'settle',
+    #     'USER': 'yezy',
+    #     'PASSWORD': 'ilomo',
+    #     'HOST': '',
+    #     'PORT': '',
+    # }
 }
 
 
