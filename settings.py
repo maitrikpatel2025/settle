@@ -94,12 +94,6 @@ DATABASES = {
 ############## CORS configurations #################
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = (
-    'localhost:3030',
-)
-CORS_ORIGIN_REGEX_WHITELIST = (
-    'localhost:3030',
-)
 ############ End of CORS Configs ###################
 
 REST_FRAMEWORK = {
