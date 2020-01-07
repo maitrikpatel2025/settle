@@ -86,7 +86,7 @@ DATABASES = {
     # 'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'settle',
+        # 'NAME': 'settle',
         # 'USER': 'yezy',
         # 'PASSWORD': 'ilomo',
         # 'HOST': '',
