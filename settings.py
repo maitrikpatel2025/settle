@@ -83,7 +83,11 @@ WSGI_APPLICATION = 'wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config()
+    'default': dj_database_url.config(
+        default="postgresql://postgresql",
+        conn_max_age=600,
+        ssl_require=True
+    )
     # 'default': {
     #     'ENGINE': 'django.db.backends.postgresql',
     #     'NAME': 'settle',
