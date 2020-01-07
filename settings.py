@@ -82,20 +82,25 @@ WSGI_APPLICATION = 'wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
+if 'DYNO' in os.environ:
+    DEBUG = False
+    db_conf = dj_database_url.config(
         default="postgresql://postgresql",
         conn_max_age=600,
         ssl_require=True
     )
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': 'settle',
-    #     'USER': 'yezy',
-    #     'PASSWORD': 'ilomo',
-    #     'HOST': '',
-    #     'PORT': '',
-    # }
+else:
+    db_conf = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'settle',
+        'USER': 'yezy',
+        'PASSWORD': 'ilomo',
+        'HOST': '',
+        'PORT': '',
+    }
+
+DATABASES = {
+    'default': db_conf
 }
 
 
