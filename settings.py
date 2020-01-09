@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-if 'DYNO' in os.environ:
+if 'PRODUCTION' in os.environ:
     DEBUG = False
     db_conf = dj_database_url.config(
         default="postgresql://postgresql",
@@ -102,7 +102,6 @@ else:
 DATABASES = {
     'default': db_conf
 }
-
 
 
 #Auth model
