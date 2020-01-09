@@ -84,11 +84,14 @@ WSGI_APPLICATION = 'wsgi.application'
 
 if 'PRODUCTION' in os.environ:
     DEBUG = False
-    db_conf = dj_database_url.config(
-        default="postgresql://postgresql",
-        conn_max_age=600,
-        ssl_require=True
-    )
+    db_conf = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'settle',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': ''
+    }
 else:
     db_conf = {
         'ENGINE': 'django.db.backends.postgresql',
@@ -96,7 +99,7 @@ else:
         'USER': 'yezy',
         'PASSWORD': 'ilomo',
         'HOST': '',
-        'PORT': '',
+        'PORT': ''
     }
 
 DATABASES = {
