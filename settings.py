@@ -172,5 +172,9 @@ USE_TZ = True
 
 STATIC_ROOT = './static/'
 STATIC_URL = '/static/'  #this is for every static file within django application
-MEDIA_ROOT = './media/'
+
+if 'PRODUCTION' in os.environ:
+    MEDIA_ROOT = '/var/www/settle/media/'
+else:
+    MEDIA_ROOT = './media'
 MEDIA_URL = '/media/'
