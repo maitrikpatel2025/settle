@@ -86,7 +86,7 @@ if 'PRODUCTION' in os.environ:
     db_conf = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'settle',
-        'USER': 'root',
+        'USER': 'yezy',
         'PASSWORD': '',
         'HOST': '',
         'PORT': ''
@@ -96,7 +96,7 @@ else:
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'settle',
         'USER': 'yezy',
-        'PASSWORD': 'ilomo',
+        'PASSWORD': '',
         'HOST': '',
         'PORT': ''
     }
