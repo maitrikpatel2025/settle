@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
@@ -26,6 +26,37 @@ ANSWER_CHOICES = (
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+
+def profile_picture_path(instance, filename):
+    ext = filename.split('.')[-1]  # Get file extension
+
+    if instance.pk:  # Get filename
+        filename = '{}.{}'.format(instance.pk, ext)
+    else:
+        filename = '{}.{}'.format(uuid4().hex, ext)
+    return os.path.join('profile_pictures', filename)
+
+
+class ProfilePicture(models.Model):
+    src = models.ImageField(upload_to=profile_picture_path)
+
+    def delete(self, *args, **kwargs):
+        img_path = settings.MEDIA_ROOT + str(self.src)
+        deletion_info = super(Picture, self).delete(*args, **kwargs)
+        path_exist = os.path.isfile(img_path)
+        if path_exist:
+            os.remove(img_path)
+        return deletion_info
+
+    def __str__(self):
+        return f"{self.src}"
+
+
+class User(AbstractUser):
+    phone = models.CharField(max_length=15, blank=True)
+    biography = models.TextField(max_length=256, blank=True)
+    picture = models.ForeignKey(ProfilePicture, blank=True, null=True, on_delete=models.CASCADE)
 
 
 class Location(models.Model):
@@ -107,7 +138,7 @@ class Property(models.Model):
         )
 
 
-def img_path(instance, filename):
+def property_img_path(instance, filename):
     ext = filename.split('.')[-1]  # Get file extension
 
     if instance.pk:  # Get filename
@@ -122,7 +153,7 @@ class Picture(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="pictures")
     is_main = models.BooleanField(default=False)
     tooltip = models.CharField(max_length=256, blank=True)
-    src = models.ImageField(upload_to=img_path)
+    src = models.ImageField(upload_to=property_img_path)
 
     def delete(self, *args, **kwargs):
         img_path = settings.MEDIA_ROOT + str(self.src)

@@ -107,7 +107,7 @@ DATABASES = {
 
 
 #Auth model
-#AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'api.User'
 
 ############## CORS configurations #################
 CORS_ORIGIN_ALLOW_ALL = True
