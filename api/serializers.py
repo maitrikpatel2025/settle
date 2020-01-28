@@ -25,7 +25,7 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     )
 
     def get_picture(self, obj):
-        if hasattr(obj, 'picture'):
+        if hasattr(obj, 'picture') and obj.picture:
             return obj.picture.src
         return None
 
