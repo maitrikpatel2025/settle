@@ -13,15 +13,16 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 
 from api.permissions import IsOwnerOrReadOnly, IsAllowedUser, HasGroupPermission
 from .models import (
-    Location, Contact, Service, Potential, Property, Picture, Room, House, 
-    Apartment, Hostel, Frame, Land, Hall, Office, Feature, Amenity, User
+    Location, Contact, Service, Potential, Property, PropertyPicture, Room,
+    House, Apartment, Hostel, Frame, Land, Hall, Office, Feature, Amenity,
+    User, ProfilePicture
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
     ContactSerializer, ServiceSerializer, PotentialSerializer,
-    PropertySerializer, PictureSerializer, RoomSerializer, HouseSerializer,
+    PropertySerializer, PropertyPictureSerializer, RoomSerializer, HouseSerializer,
     ApartmentSerializer, HostelSerializer, FrameSerializer, LandSerializer,
-    HallSerializer, OfficeSerializer, AmenitySerializer
+    HallSerializer, OfficeSerializer, AmenitySerializer, ProfilePictureSerializer
 )
 
 
@@ -80,6 +81,13 @@ class RegisterUser(ObtainAuthToken):
             **user_serializer.data
         }
         return Response(data)
+
+
+class ProfilePictureViewSet(viewsets.ModelViewSet):
+    """API endpoint that allows Profile Picture to be viewed or edited."""
+    queryset = ProfilePicture.objects.all()
+    serializer_class = ProfilePictureSerializer
+    filter_fields = fields('id',)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -229,10 +237,10 @@ class PropertyViewSet(EagerLoadingMixin, viewsets.ModelViewSet):
         return queryset
 
 
-class PictureViewSet(viewsets.ModelViewSet):
+class PropertyPictureViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Picture to be viewed or edited."""
-    queryset = Picture.objects.all()
-    serializer_class = PictureSerializer
+    queryset = PropertyPicture.objects.all()
+    serializer_class = PropertyPictureSerializer
     filter_fields = fields('id', 'property', 'tooltip')
 
 

@@ -43,7 +43,7 @@ class ProfilePicture(models.Model):
 
     def delete(self, *args, **kwargs):
         img_path = settings.MEDIA_ROOT + str(self.src)
-        deletion_info = super(Picture, self).delete(*args, **kwargs)
+        deletion_info = super(ProfilePicture, self).delete(*args, **kwargs)
         path_exist = os.path.isfile(img_path)
         if path_exist:
             os.remove(img_path)
@@ -148,7 +148,7 @@ def property_img_path(instance, filename):
     return os.path.join('property_photos', filename)
 
 
-class Picture(models.Model):
+class PropertyPicture(models.Model):
     id = models.AutoField(primary_key=True)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="pictures")
     is_main = models.BooleanField(default=False)
@@ -157,7 +157,7 @@ class Picture(models.Model):
 
     def delete(self, *args, **kwargs):
         img_path = settings.MEDIA_ROOT + str(self.src)
-        deletion_info = super(Picture, self).delete(*args, **kwargs)
+        deletion_info = super(PropertyPicture, self).delete(*args, **kwargs)
         path_exist = os.path.isfile(img_path)
         if path_exist:
             os.remove(img_path)
