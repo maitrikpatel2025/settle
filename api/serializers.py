@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from django_restql.mixins import DynamicFieldsMixin
 from django_restql.fields import NestedField
 from django_restql.serializers import NestedModelSerializer
@@ -7,7 +7,7 @@ from django_restql.serializers import NestedModelSerializer
 from .models import (
     Location, Contact, Service, Potential, Property, Feature,
     Picture, Room, House, Apartment, Hostel, Frame, Land,
-    Hall, Office, Amenity
+    Hall, Office, Amenity, User
 )
 
 

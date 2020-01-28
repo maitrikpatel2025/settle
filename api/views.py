@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.models import Token
 from django_restql.mixins import EagerLoadingMixin
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from django.db.models.functions import Concat, Replace
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from api.permissions import IsOwnerOrReadOnly, IsAllowedUser, HasGroupPermission
 from .models import (
     Location, Contact, Service, Potential, Property, Picture, Room, House, 
-    Apartment, Hostel, Frame, Land, Hall, Office, Feature, Amenity
+    Apartment, Hostel, Frame, Land, Hall, Office, Feature, Amenity, User
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
