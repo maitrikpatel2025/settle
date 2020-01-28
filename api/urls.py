@@ -5,6 +5,7 @@ from rest_framework.authtoken import views as auth_view
 from api import views
 
 router = routers.DefaultRouter()
+router.register(r'profile-pictures', views.ProfilePictureViewSet)
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'locations', views.LocationViewSet)
@@ -13,7 +14,7 @@ router.register(r'services', views.ServiceViewSet)
 router.register(r'potentials', views.PotentialViewSet)
 router.register(r'features', views.FeatureViewSet)
 router.register(r'amenities', views.AmenityViewSet)
-router.register(r'pictures', views.PictureViewSet)
+router.register(r'property-pictures', views.PropertyPictureViewSet)
 
 router.register(r'properties', views.PropertyViewSet)
 router.register(r'rooms', views.RoomViewSet)

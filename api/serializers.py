@@ -6,19 +6,30 @@ from django_restql.serializers import NestedModelSerializer
 
 from .models import (
     Location, Contact, Service, Potential, Property, Feature,
-    Picture, Room, House, Apartment, Hostel, Frame, Land,
-    Hall, Office, Amenity, User
+    PropertyPicture, Room, House, Apartment, Hostel, Frame, Land,
+    Hall, Office, Amenity, User, ProfilePicture
 )
 
 
+class ProfilePictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ProfilePicture
+        fields = ('id', 'url')
+
+
 class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    picture = ProfilePictureSerializer(read_only=True)
     password = serializers.CharField(
         write_only=True,
         style={'input_type': 'password'}
     )
     class Meta:
         model = User
-        fields = ('id', 'url', 'username', 'email', 'password', 'groups')
+        fields = (
+            'id', 'url', 'username', 'email', 'password', 'phone', 'groups',
+            'date_joined', 'is_staff', 'first_name', 'last_name',
+            'is_active', 'picture', 'biography'
+        )
         read_only_fields = (
             'date_joined', 'is_staff'
         )
@@ -63,9 +74,9 @@ class PotentialSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = ('id', 'url', 'name')
 
 
-class PictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class PropertyPictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
-        model = Picture
+        model = PropertyPicture
         fields = ('id', 'url', 'is_main', 'property', 'tooltip', 'src')
 
 
@@ -76,7 +87,7 @@ class FeatureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
 
 class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
-    pictures = PictureSerializer(many=True, read_only=True)
+    pictures = PropertyPictureSerializer(many=True, read_only=True)
     location = NestedField(LocationSerializer, many=False)
     amenities = NestedField(AmenitySerializer, many=True, required=False)
     services = NestedField(ServiceSerializer, many=True, required=False)
