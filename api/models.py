@@ -38,7 +38,13 @@ def profile_picture_path(instance, filename):
     return os.path.join('profile_pictures', filename)
 
 
+class User(AbstractUser):
+    phone = models.CharField(max_length=15, blank=True)
+    biography = models.TextField(max_length=256, blank=True)
+
+
 class ProfilePicture(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="picture")
     src = models.ImageField(upload_to=profile_picture_path)
 
     def delete(self, *args, **kwargs):
@@ -51,12 +57,6 @@ class ProfilePicture(models.Model):
 
     def __str__(self):
         return f"{self.src}"
-
-
-class User(AbstractUser):
-    phone = models.CharField(max_length=15, blank=True)
-    biography = models.TextField(max_length=256, blank=True)
-    picture = models.ForeignKey(ProfilePicture, blank=True, null=True, on_delete=models.CASCADE)
 
 
 class Location(models.Model):

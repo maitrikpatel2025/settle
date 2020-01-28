@@ -14,7 +14,7 @@ from .models import (
 class ProfilePictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ProfilePicture
-        fields = ('id', 'url')
+        fields = ('id', 'user', 'url')
 
 
 class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -23,6 +23,12 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         write_only=True,
         style={'input_type': 'password'}
     )
+
+    def get_picture(self, obj):
+        if hasattr(obj, 'picture'):
+            return obj.picture.src
+        return None
+
     class Meta:
         model = User
         fields = (
