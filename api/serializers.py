@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import Group
+from django.core.exceptions import ObjectDoesNotExist
 from django_restql.mixins import DynamicFieldsMixin
 from django_restql.fields import NestedField
 from django_restql.serializers import NestedModelSerializer
@@ -14,7 +15,16 @@ from .models import (
 class ProfilePictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ProfilePicture
-        fields = ('id', 'user', 'url')
+        fields = ('id', 'url', 'src')
+
+    def create(self, validated_data):
+        """function for creating a profile picture """
+        request = self.context.get('request')
+        user = request.user
+
+        validated_data.update({"user": user})
+        picture = super().create(validated_data)
+        return picture
 
 
 class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -23,12 +33,6 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         write_only=True,
         style={'input_type': 'password'}
     )
-
-    def get_picture(self, obj):
-        if hasattr(obj, 'picture') and obj.picture:
-            return obj.picture.src
-        return None
-
     class Meta:
         model = User
         fields = (
@@ -84,6 +88,21 @@ class PropertyPictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
     class Meta:
         model = PropertyPicture
         fields = ('id', 'url', 'is_main', 'property', 'tooltip', 'src')
+
+    def create(self, validated_data):
+        """function for creating a property picture """
+        request = self.context.get('request')
+        user = request.user
+
+        property = validated_data.get("property", None)
+
+        if property.owner is not user:
+            raise serializers.ValidationError(
+                {"property": f"You don't own a property with `id={property.pk}`"},
+                "Value error"
+            )
+
+        return super().create(validated_data)
 
 
 class FeatureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
