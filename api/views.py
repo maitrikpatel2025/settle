@@ -11,7 +11,10 @@ from django.db.models.functions import Concat, Replace
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
-from api.permissions import IsOwnerOrReadOnly, IsAllowedUser, HasGroupPermission
+from api.permissions import (
+    IsOwnerOrReadOnly, IsAllowedUser, HasGroupPermission, 
+    BelongsToPropertyOwnedByAuthenticatedUser
+)
 from .models import (
     Location, Contact, Service, Potential, Property, PropertyPicture, Room,
     House, Apartment, Hostel, Frame, Land, Hall, Office, Feature, Amenity,
@@ -87,6 +90,7 @@ class ProfilePictureViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Profile Picture to be viewed or edited."""
     queryset = ProfilePicture.objects.all()
     serializer_class = ProfilePictureSerializer
+    permission_classes = (IsAuthenticated,)
     filter_fields = fields('id',)
 
 
@@ -103,6 +107,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        if user.is_superuser:
+            return super().get_queryset()
         return super().get_queryset().filter(id=user.id)
 
     def retrieve(self, request, pk=None):
@@ -238,9 +244,10 @@ class PropertyViewSet(EagerLoadingMixin, viewsets.ModelViewSet):
 
 
 class PropertyPictureViewSet(viewsets.ModelViewSet):
-    """API endpoint that allows Picture to be viewed or edited."""
+    """API endpoint that allows Property Picture to be viewed or edited."""
     queryset = PropertyPicture.objects.all()
     serializer_class = PropertyPictureSerializer
+    permission_classes = (IsAuthenticated, BelongsToPropertyOwnedByAuthenticatedUser)
     filter_fields = fields('id', 'property', 'tooltip')
 
 
