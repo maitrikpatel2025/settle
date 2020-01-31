@@ -22,7 +22,7 @@ class ProfilePictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         request = self.context.get('request')
         user = request.user
 
-        validated_data.update({"user": user})
+        validated_data.update({"owner": user})
         picture = super().create(validated_data)
         return picture
 
@@ -96,7 +96,7 @@ class PropertyPictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
 
         property = validated_data.get("property", None)
 
-        if property.owner is not user:
+        if property.owner != user:
             raise serializers.ValidationError(
                 {"property": f"You don't own a property with `id={property.pk}`"},
                 "Value error"

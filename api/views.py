@@ -90,7 +90,7 @@ class ProfilePictureViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Profile Picture to be viewed or edited."""
     queryset = ProfilePicture.objects.all()
     serializer_class = ProfilePictureSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     filter_fields = fields('id',)
 
 

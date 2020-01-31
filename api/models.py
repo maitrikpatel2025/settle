@@ -44,7 +44,7 @@ class User(AbstractUser):
 
 
 class ProfilePicture(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="picture")
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name="picture")
     src = models.ImageField(upload_to=profile_picture_path)
 
     def delete(self, *args, **kwargs):
