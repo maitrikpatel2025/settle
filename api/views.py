@@ -153,7 +153,7 @@ class AmenityViewSet(viewsets.ModelViewSet):
     queryset = Amenity.objects.all()
     serializer_class = AmenitySerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_fields = fields('id', 'name')
+    filter_fields = fields('id', {'name': ['contains', 'startswith']})
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
@@ -161,7 +161,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_fields = fields('id', 'name')
+    filter_fields = fields('id', {'name': ['contains', 'startswith']})
 
 
 class PotentialViewSet(viewsets.ModelViewSet):
@@ -169,7 +169,7 @@ class PotentialViewSet(viewsets.ModelViewSet):
     queryset = Potential.objects.all()
     serializer_class = PotentialSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_fields = fields('id', 'name')
+    filter_fields = fields('id', {'name': ['contains', 'startswith']})
 
 
 class PropertyViewSet(EagerLoadingMixin, viewsets.ModelViewSet):
