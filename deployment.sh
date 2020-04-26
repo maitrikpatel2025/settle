@@ -1,3 +1,3 @@
 python3 manage.py migrate
-sudo systemctl restart settle.service
-sudo systemctl restart nginx.service 
+echo ""|sudo -S systemctl restart settle.service
+echo ""|sudo -S systemctl restart nginx.service 
