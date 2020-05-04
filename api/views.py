@@ -101,7 +101,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAllowedUser, HasGroupPermission)
     http_method_names = ['get', 'put', 'patch', 'head', 'delete']
     filter_fields = fields(
-        'id', {'email': ['exact', 'icontains']},
+        'id', {'email': ['exact', 'icontains']}, 'full_name',
         'groups', {'username': ['exact', 'icontains']}
     )
 
