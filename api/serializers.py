@@ -37,8 +37,8 @@ class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'url', 'username', 'email', 'password', 'phone', 'groups',
-            'date_joined', 'is_staff', 'first_name', 'last_name',
-            'is_active', 'picture', 'biography'
+            'date_joined', 'is_staff', 'full_name', 'is_active', 'picture',
+            'biography'
         )
         read_only_fields = (
             'date_joined', 'is_staff'
