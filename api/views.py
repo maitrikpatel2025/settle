@@ -72,10 +72,14 @@ class RegisterUser(ObtainAuthToken):
         )
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        full_name = data.pop("full_name")
         username = data.pop("username")
         email = data.pop("email", "")
         password = data.pop("password")
-        user = User.objects.create_user(username, email, password)
+        user = User.objects.create_user(
+            username, email, password,
+            full_name=full_name
+        )
         user.save()
         token, created = Token.objects.get_or_create(user=user)
         user_serializer = UserSerializer(user, context={'request': request})
