@@ -5,7 +5,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.models import Token
-from django_restql.mixins import EagerLoadingMixin
+from django_restql.mixins import (
+    EagerLoadingMixin, QueryArgumentsMixin
+)
 from django.contrib.auth.models import Group
 from django.db.models.functions import Concat, Replace
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -90,7 +92,7 @@ class RegisterUser(ObtainAuthToken):
         return Response(data)
 
 
-class ProfilePictureViewSet(viewsets.ModelViewSet):
+class ProfilePictureViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows Profile Picture to be viewed or edited."""
     queryset = ProfilePicture.objects.all()
     serializer_class = ProfilePictureSerializer
@@ -98,7 +100,7 @@ class ProfilePictureViewSet(viewsets.ModelViewSet):
     filter_fields = fields('id',)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows users to be viewed or edited."""
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
@@ -122,7 +124,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, pk=pk)
 
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows groups to be viewed or edited."""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
@@ -130,7 +132,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     filter_fields = fields('id', 'name')
 
 
-class LocationViewSet(viewsets.ModelViewSet):
+class LocationViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows Location to be viewed or edited."""
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
@@ -141,7 +143,7 @@ class LocationViewSet(viewsets.ModelViewSet):
     )
 
 
-class ContactViewSet(viewsets.ModelViewSet):
+class ContactViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows Contact to be viewed or edited."""
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
@@ -152,7 +154,7 @@ class ContactViewSet(viewsets.ModelViewSet):
     )
 
 
-class AmenityViewSet(viewsets.ModelViewSet):
+class AmenityViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows Amenity to be viewed or edited."""
     queryset = Amenity.objects.all()
     serializer_class = AmenitySerializer
@@ -160,7 +162,7 @@ class AmenityViewSet(viewsets.ModelViewSet):
     filter_fields = fields('id', {'name': ['icontains', 'startswith']})
 
 
-class ServiceViewSet(viewsets.ModelViewSet):
+class ServiceViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows Service to be viewed or edited."""
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
@@ -168,7 +170,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
     filter_fields = fields('id', {'name': ['icontains', 'startswith']})
 
 
-class PotentialViewSet(viewsets.ModelViewSet):
+class PotentialViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows Potential to be viewed or edited."""
     queryset = Potential.objects.all()
     serializer_class = PotentialSerializer
@@ -176,7 +178,7 @@ class PotentialViewSet(viewsets.ModelViewSet):
     filter_fields = fields('id', {'name': ['icontains', 'startswith']})
 
 
-class PropertyViewSet(EagerLoadingMixin, viewsets.ModelViewSet):
+class PropertyViewSet(QueryArgumentsMixin, EagerLoadingMixin, viewsets.ModelViewSet):
     """API endpoint that allows Property to be viewed or edited."""
     queryset = Property.objects.all().order_by('-post_date')
 
@@ -247,7 +249,7 @@ class PropertyViewSet(EagerLoadingMixin, viewsets.ModelViewSet):
         return queryset
 
 
-class PropertyPictureViewSet(viewsets.ModelViewSet):
+class PropertyPictureViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows Property Picture to be viewed or edited."""
     queryset = PropertyPicture.objects.all()
     serializer_class = PropertyPictureSerializer
@@ -331,7 +333,7 @@ class HallViewSet(PropertyViewSet):
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 
-class FeatureViewSet(viewsets.ModelViewSet):
+class FeatureViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     """API endpoint that allows PropertyFeature to be viewed or edited."""
     queryset = Feature.objects.all().order_by('-id')
     serializer_class = FeatureSerializer
