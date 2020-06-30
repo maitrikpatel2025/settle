@@ -169,8 +169,9 @@ class PropertyPicture(models.Model):
 
 
 class Room(Property):
+    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
+    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         self.type = "room"
