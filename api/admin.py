@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Location, Contact, Service, Potential, Property, PropertyPicture,
-    Room, House, Apartment, Hostel, Frame, Land, Hall, Office, Feature, 
+    Room, House, Apartment, Hostel, Frame, Land, Office, Feature, 
     ProfilePicture, Amenity
 )
 
@@ -9,7 +9,6 @@ from .models import (
 
 admin.site.register(Apartment)
 admin.site.register(Frame)
-admin.site.register(Hall)
 admin.site.register(Hostel)
 admin.site.register(House)
 admin.site.register(Land)

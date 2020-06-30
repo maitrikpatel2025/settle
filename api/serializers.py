@@ -8,7 +8,7 @@ from django_restql.serializers import NestedModelSerializer
 from .models import (
     Location, Contact, Service, Potential, Property, Feature,
     PropertyPicture, Room, House, Apartment, Hostel, Frame, Land,
-    Hall, Office, Amenity, User, ProfilePicture
+    Office, Amenity, User, ProfilePicture
 )
 
 
@@ -130,7 +130,7 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
             'id', 'url', 'available_for', 'price', 'price_negotiation', 'rating',
             'currency', 'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features', 'contact',
-            'post_date', 'type'
+            'post_date', 'type', 'available_for_options'
         )
 
     def create(self, validated_data):
@@ -147,7 +147,7 @@ class RoomSerializer(PropertySerializer):
     class Meta:
         model = Room
         fields = (
-            'payment_terms', 'unit_of_payment_terms',
+            'price_rate_unit', 'payment_terms', 'payment_terms_unit',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
@@ -157,7 +157,7 @@ class HouseSerializer(PropertySerializer):
     class Meta:
         model = House
         fields = (
-            'payment_terms', 'unit_of_payment_terms',
+            'price_rate_unit', 'payment_terms', 'payment_terms_unit',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
@@ -167,7 +167,7 @@ class ApartmentSerializer(PropertySerializer):
     class Meta:
         model = Apartment
         fields = (
-            'payment_terms', 'unit_of_payment_terms',
+            'price_rate_unit', 'payment_terms', 'payment_terms_unit',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
@@ -187,8 +187,7 @@ class FrameSerializer(PropertySerializer):
     class Meta:
         model = Frame
         fields = (
-            'width', 'length', 'length_unit', 'area', 'payment_terms',
-            'unit_of_payment_terms',
+            'price_rate_unit', 'payment_terms', 'payment_terms_unit',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
@@ -198,8 +197,7 @@ class OfficeSerializer(PropertySerializer):
     class Meta:
         model = Office
         fields = (
-            'width', 'length', 'length_unit', 'area', 'payment_terms',
-            'unit_of_payment_terms',
+            'price_rate_unit', 'payment_terms', 'payment_terms_unit',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
@@ -208,16 +206,9 @@ class OfficeSerializer(PropertySerializer):
 class HostelSerializer(PropertySerializer):
     class Meta:
         model = Hostel
-        fields = ()
-
-    Meta.fields = PropertySerializer.Meta.fields + Meta.fields
-
-
-class HallSerializer(PropertySerializer):
-    class Meta:
-        model = Hall
         fields = (
-            'area', 'area_unit', 'carrying_capacity'
+            'price_rate_unit', 'payment_terms', 'payment_terms_unit',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
+

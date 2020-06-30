@@ -24,7 +24,6 @@ router.register(r'lands', views.LandViewSet)
 router.register(r'frames', views.FrameViewSet)
 router.register(r'offices', views.OfficeViewSet)
 router.register(r'hostels', views.HostelViewSet)
-router.register(r'halls', views.HallViewSet)
 
 
 urlpatterns = [
