@@ -19,15 +19,15 @@ from api.permissions import (
 )
 from .models import (
     Location, Contact, Service, Potential, Property, PropertyPicture, Room,
-    House, Apartment, Hostel, Frame, Land, Hall, Office, Feature, Amenity,
-    User, ProfilePicture
+    House, Apartment, Hostel, Frame, Land, Office, Feature, Amenity, User,
+    ProfilePicture
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
     ContactSerializer, ServiceSerializer, PotentialSerializer,
     PropertySerializer, PropertyPictureSerializer, RoomSerializer, HouseSerializer,
     ApartmentSerializer, HostelSerializer, FrameSerializer, LandSerializer,
-    HallSerializer, OfficeSerializer, AmenitySerializer, ProfilePictureSerializer
+    OfficeSerializer, AmenitySerializer, ProfilePictureSerializer
 )
 
 
@@ -262,7 +262,7 @@ class RoomViewSet(PropertyViewSet):
     queryset = Room.objects.all().order_by('-post_date')
     serializer_class = RoomSerializer
     filter_fields = fields(
-        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
+        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -272,7 +272,7 @@ class HouseViewSet(PropertyViewSet):
     queryset = House.objects.all().order_by('-post_date')
     serializer_class = HouseSerializer
     filter_fields = fields(
-        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
+        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -282,7 +282,7 @@ class ApartmentViewSet(PropertyViewSet):
     queryset = Apartment.objects.all().order_by('-post_date')
     serializer_class = ApartmentSerializer
     filter_fields = fields(
-        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
+        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -300,7 +300,7 @@ class FrameViewSet(PropertyViewSet):
     queryset = Frame.objects.all().order_by('-post_date')
     serializer_class = FrameSerializer
     filter_fields = fields(
-        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
+        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -310,7 +310,7 @@ class OfficeViewSet(PropertyViewSet):
     queryset = Office.objects.all().order_by('-post_date')
     serializer_class = OfficeSerializer
     filter_fields = fields(
-        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
+        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -320,16 +320,8 @@ class HostelViewSet(PropertyViewSet):
     queryset = Hostel.objects.all().order_by('-post_date')
     serializer_class = HostelSerializer
     filter_fields = fields(
-        'unit_of_payment_terms', {'payment_terms': ['exact', 'lt', 'gt']}
+        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
     )
-    filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
-
-
-class HallViewSet(PropertyViewSet):
-    """API endpoint that allows Hall to be viewed or edited."""
-    queryset = Hall.objects.all().order_by('-post_date')
-    serializer_class = HallSerializer
-    filter_fields = fields()
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 

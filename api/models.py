@@ -13,7 +13,6 @@ from rest_framework.authtoken.models import Token
 AVAILABLE_FOR_CHOICES = (
     ('sale', 'Sale'),
     ('rent', 'Rent'),
-    ('book', 'Book')
 )
 
 ANSWER_CHOICES = (
@@ -124,6 +123,9 @@ class Property(models.Model):
     services = models.ManyToManyField(Service, blank=True, related_name="properties")
     potentials = models.ManyToManyField(Potential, blank=True, related_name="properties")
     post_date = models.DateTimeField(auto_now_add=True)
+    
+    def available_for_options(self):
+        return []
 
     def __str__(self):
         return (
@@ -173,24 +175,35 @@ class Room(Property):
     payment_terms = models.SmallIntegerField(blank=True, null=True)
     payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
+    def available_for_options(self):
+        return ['rent']
+        
     def save(self, *args, **kwargs):
         self.type = "room"
         super().save(*args, **kwargs)
 
 
 class House(Property):
+    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
+    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
+    def available_for_options(self):
+        return ['rent', 'sale']
+        
     def save(self, *args, **kwargs):
         self.type = "house"
         super().save(*args, **kwargs)
 
 
 class Apartment(Property):
+    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
+    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
+    def available_for_options(self):
+        return ['rent', 'sale']
+        
     def save(self, *args, **kwargs):
         self.type = "apartment"
         super().save(*args, **kwargs)
@@ -203,54 +216,52 @@ class Land(Property):
     area = models.FloatField(blank=True, null=True)
     is_registered = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
 
+    def available_for_options(self):
+        return ['sale']
+        
     def save(self, *args, **kwargs):
         self.type = "land"
         super().save(*args, **kwargs)
 
 
 class Frame(Property):
-    width = models.FloatField(blank=True, null=True)
-    length = models.FloatField(blank=True, null=True)
-    length_unit = models.CharField(max_length=10, blank=True, null=True)
-    area = models.FloatField(blank=True, null=True)
+    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
+    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
+    def available_for_options(self):
+        return ['rent']
+        
     def save(self, *args, **kwargs):
         self.type = "frame"
         super().save(*args, **kwargs)
 
 
 class Office(Property):
-    width = models.FloatField(blank=True, null=True)
-    length = models.FloatField(blank=True, null=True)
-    length_unit = models.CharField(max_length=10, blank=True, null=True)
-    area = models.FloatField(blank=True, null=True)
+    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
+    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
+    def available_for_options(self):
+        return ['rent']
+        
     def save(self, *args, **kwargs):
         self.type = "office"
         super().save(*args, **kwargs)
 
 
 class Hostel(Property):
+    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
     payment_terms = models.SmallIntegerField(blank=True, null=True)
-    unit_of_payment_terms = models.CharField(max_length=100, blank=True, null=True)
+    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
+    def available_for_options(self):
+        return ['rent']
+        
     def save(self, *args, **kwargs):
         self.type = "hostel"
         super().save(*args, **kwargs)
 
-
-class Hall(Property):
-    area = models.FloatField(blank=True, null=True)
-    area_unit = models.CharField(max_length=10, blank=True, null=True)
-    carrying_capacity = models.IntegerField(blank=True, null=True)
-
-    def save(self, *args, **kwargs):
-        self.type = "hall"
-        super().save(*args, **kwargs)
 
 class Feature(models.Model):
     id = models.AutoField(primary_key=True)
