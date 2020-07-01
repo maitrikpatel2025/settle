@@ -113,6 +113,7 @@ class Property(models.Model):
     available_for = models.CharField(max_length=5, choices=AVAILABLE_FOR_CHOICES)
     price = models.FloatField()
     currency = models.CharField(max_length=256)
+    payment_terms = models.TextField(blank=True, null=True)
     price_negotiation = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
     descriptions = models.TextField(blank=True, null=True)
     rating = models.SmallIntegerField(default=3, null=True)
@@ -172,8 +173,6 @@ class PropertyPicture(models.Model):
 
 class Room(Property):
     price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-    payment_terms = models.SmallIntegerField(blank=True, null=True)
-    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
     def available_for_options(self):
         return ['rent']
@@ -185,8 +184,6 @@ class Room(Property):
 
 class House(Property):
     price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-    payment_terms = models.SmallIntegerField(blank=True, null=True)
-    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
     def available_for_options(self):
         return ['rent', 'sale']
@@ -198,8 +195,6 @@ class House(Property):
 
 class Apartment(Property):
     price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-    payment_terms = models.SmallIntegerField(blank=True, null=True)
-    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
     def available_for_options(self):
         return ['rent', 'sale']
@@ -226,8 +221,6 @@ class Land(Property):
 
 class Frame(Property):
     price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-    payment_terms = models.SmallIntegerField(blank=True, null=True)
-    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
     def available_for_options(self):
         return ['rent']
@@ -239,8 +232,6 @@ class Frame(Property):
 
 class Office(Property):
     price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-    payment_terms = models.SmallIntegerField(blank=True, null=True)
-    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
     def available_for_options(self):
         return ['rent']
@@ -252,8 +243,6 @@ class Office(Property):
 
 class Hostel(Property):
     price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-    payment_terms = models.SmallIntegerField(blank=True, null=True)
-    payment_terms_unit = models.CharField(max_length=100, blank=True, null=True)
 
     def available_for_options(self):
         return ['rent']

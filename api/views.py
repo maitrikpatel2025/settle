@@ -262,7 +262,7 @@ class RoomViewSet(PropertyViewSet):
     queryset = Room.objects.all().order_by('-post_date')
     serializer_class = RoomSerializer
     filter_fields = fields(
-        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
+        'price_rate_unit',
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -272,7 +272,7 @@ class HouseViewSet(PropertyViewSet):
     queryset = House.objects.all().order_by('-post_date')
     serializer_class = HouseSerializer
     filter_fields = fields(
-        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
+        'price_rate_unit',
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -282,7 +282,7 @@ class ApartmentViewSet(PropertyViewSet):
     queryset = Apartment.objects.all().order_by('-post_date')
     serializer_class = ApartmentSerializer
     filter_fields = fields(
-        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
+        'price_rate_unit',
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -300,7 +300,7 @@ class FrameViewSet(PropertyViewSet):
     queryset = Frame.objects.all().order_by('-post_date')
     serializer_class = FrameSerializer
     filter_fields = fields(
-        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
+        'price_rate_unit',
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -310,7 +310,7 @@ class OfficeViewSet(PropertyViewSet):
     queryset = Office.objects.all().order_by('-post_date')
     serializer_class = OfficeSerializer
     filter_fields = fields(
-        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
+        'price_rate_unit',
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
@@ -320,7 +320,7 @@ class HostelViewSet(PropertyViewSet):
     queryset = Hostel.objects.all().order_by('-post_date')
     serializer_class = HostelSerializer
     filter_fields = fields(
-        'payment_terms_unit', {'payment_terms': ['exact', 'lt', 'gt']}
+        'price_rate_unit',
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
