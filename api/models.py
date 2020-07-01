@@ -205,10 +205,9 @@ class Apartment(Property):
 
 
 class Land(Property):
-    width = models.FloatField(blank=True, null=True)
-    length = models.FloatField(blank=True, null=True)
-    length_unit = models.CharField(max_length=10, blank=True, null=True)
-    area = models.FloatField(blank=True, null=True)
+    width = models.CharField(max_length=100, blank=True, null=True)
+    length = models.CharField(max_length=100, blank=True, null=True)
+    area = models.CharField(max_length=100, blank=True, null=True)
     is_registered = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
 
     def available_for_options(self):

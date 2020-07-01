@@ -177,7 +177,7 @@ class LandSerializer(PropertySerializer):
     class Meta:
         model = Land
         fields = (
-            'width', 'length', 'length_unit', 'area', 'is_registered',
+            'width', 'length', 'area', 'is_registered',
         )
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
