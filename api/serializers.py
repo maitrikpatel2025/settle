@@ -127,10 +127,11 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
     class Meta:
         model = Property
         fields = (
-            'id', 'url', 'available_for', 'price', 'price_negotiation', 'rating',
+            'id', 'url', 'available_for', 'available_for_options', 'price',
+            'price_rate_unit', 'payment_terms', 'is_price_negotiable', 'rating',
             'currency', 'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features', 'contact',
-            'post_date', 'type', 'available_for_options', 'payment_terms'
+            'post_date', 'type'
         )
 
     def create(self, validated_data):
@@ -146,9 +147,7 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
 class RoomSerializer(PropertySerializer):
     class Meta:
         model = Room
-        fields = (
-            'price_rate_unit',
-        )
+        fields = ()
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
@@ -156,9 +155,7 @@ class RoomSerializer(PropertySerializer):
 class HouseSerializer(PropertySerializer):
     class Meta:
         model = House
-        fields = (
-            'price_rate_unit',
-        )
+        fields = ()
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
@@ -166,9 +163,7 @@ class HouseSerializer(PropertySerializer):
 class ApartmentSerializer(PropertySerializer):
     class Meta:
         model = Apartment
-        fields = (
-            'price_rate_unit',
-        )
+        fields = ()
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
@@ -186,9 +181,7 @@ class LandSerializer(PropertySerializer):
 class FrameSerializer(PropertySerializer):
     class Meta:
         model = Frame
-        fields = (
-            'price_rate_unit',
-        )
+        fields = ()
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
@@ -196,9 +189,7 @@ class FrameSerializer(PropertySerializer):
 class OfficeSerializer(PropertySerializer):
     class Meta:
         model = Office
-        fields = (
-            'price_rate_unit',
-        )
+        fields = ()
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
@@ -206,9 +197,7 @@ class OfficeSerializer(PropertySerializer):
 class HostelSerializer(PropertySerializer):
     class Meta:
         model = Hostel
-        fields = (
-            'price_rate_unit',
-        )
+        fields = ()
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 

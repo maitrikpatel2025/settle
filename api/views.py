@@ -199,7 +199,7 @@ class PropertyViewSet(QueryArgumentsMixin, EagerLoadingMixin, viewsets.ModelView
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
         'id',  'available_for', {'price': ['exact', 'lt', 'gt']},
-        'price_negotiation', 'currency', 'location', 'owner',
+        'is_price_negotiable', 'currency', 'location', 'owner',
         {'contact': ['exact', 'in']},
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
