@@ -112,9 +112,10 @@ class Property(models.Model):
     type = models.CharField(max_length=256, editable=False, default="generic")
     available_for = models.CharField(max_length=5, choices=AVAILABLE_FOR_CHOICES)
     price = models.FloatField()
+    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
     currency = models.CharField(max_length=256)
     payment_terms = models.TextField(blank=True, null=True)
-    price_negotiation = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
+    is_price_negotiable = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
     descriptions = models.TextField(blank=True, null=True)
     rating = models.SmallIntegerField(default=3, null=True)
     owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
@@ -127,7 +128,7 @@ class Property(models.Model):
     
     def available_for_options(self):
         return []
-
+        
     def __str__(self):
         return (
             "%s, %s, %s, %s, %s, %s" %
@@ -172,8 +173,6 @@ class PropertyPicture(models.Model):
 
 
 class Room(Property):
-    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-
     def available_for_options(self):
         return ['rent']
         
@@ -183,8 +182,6 @@ class Room(Property):
 
 
 class House(Property):
-    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-
     def available_for_options(self):
         return ['rent', 'sale']
         
@@ -194,8 +191,6 @@ class House(Property):
 
 
 class Apartment(Property):
-    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-
     def available_for_options(self):
         return ['rent', 'sale']
         
@@ -219,8 +214,6 @@ class Land(Property):
 
 
 class Frame(Property):
-    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-
     def available_for_options(self):
         return ['rent']
         
@@ -230,8 +223,6 @@ class Frame(Property):
 
 
 class Office(Property):
-    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-
     def available_for_options(self):
         return ['rent']
         
@@ -241,8 +232,6 @@ class Office(Property):
 
 
 class Hostel(Property):
-    price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
-
     def available_for_options(self):
         return ['rent']
         
