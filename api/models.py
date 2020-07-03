@@ -8,17 +8,42 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
-# Create your models here.
+
+# Property availability
+SALE = 'sale'
+RENT = 'rent'
 
 AVAILABLE_FOR_CHOICES = (
-    ('sale', 'Sale'),
-    ('rent', 'Rent'),
+    (SALE, 'Sale'),
+    (RENT, 'Rent'),
 )
 
 ANSWER_CHOICES = (
     ('Y', 'YES'),
     ('N', 'NO'),
 )
+
+# Property types
+PROPERTY = 'generic'
+ROOM = 'room'
+HOUSE = 'house'
+APARTMENT = 'apartment'
+LAND = 'land'
+FRAME = 'frame'
+OFFICE = 'office'
+HOSTEL = 'hostel'
+
+# Property type => availability
+PROPERTIES_AVAILABILITY = {
+    PROPERTY: [],
+    ROOM: [RENT],
+    HOUSE: [RENT, SALE],
+    APARTMENT: [RENT, SALE],
+    LAND: [SALE],
+    FRAME: [RENT],
+    OFFICE: [RENT],
+    HOSTEL: [RENT]
+}
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -109,7 +134,7 @@ class Potential(models.Model):
 
 class Property(models.Model):
     id = models.AutoField(primary_key=True)
-    type = models.CharField(max_length=256, editable=False, default="generic")
+    type = models.CharField(max_length=256, editable=False, default=PROPERTY)
     available_for = models.CharField(max_length=5, choices=AVAILABLE_FOR_CHOICES)
     price = models.FloatField()
     price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
@@ -174,28 +199,28 @@ class PropertyPicture(models.Model):
 
 class Room(Property):
     def available_for_options(self):
-        return ['rent']
+        return PROPERTIES_AVAILABILITY[ROOM]
         
     def save(self, *args, **kwargs):
-        self.type = "room"
+        self.type = ROOM
         super().save(*args, **kwargs)
 
 
 class House(Property):
     def available_for_options(self):
-        return ['rent', 'sale']
+        return PROPERTIES_AVAILABILITY[HOUSE]
         
     def save(self, *args, **kwargs):
-        self.type = "house"
+        self.type = HOUSE
         super().save(*args, **kwargs)
 
 
 class Apartment(Property):
     def available_for_options(self):
-        return ['rent', 'sale']
+        return PROPERTIES_AVAILABILITY[APARTMENT]
         
     def save(self, *args, **kwargs):
-        self.type = "apartment"
+        self.type = APARTMENT
         super().save(*args, **kwargs)
 
 
@@ -206,37 +231,37 @@ class Land(Property):
     is_registered = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
 
     def available_for_options(self):
-        return ['sale']
+        return PROPERTIES_AVAILABILITY[LAND]
         
     def save(self, *args, **kwargs):
-        self.type = "land"
+        self.type = LAND
         super().save(*args, **kwargs)
 
 
 class Frame(Property):
     def available_for_options(self):
-        return ['rent']
+        return PROPERTIES_AVAILABILITY[FRAME]
         
     def save(self, *args, **kwargs):
-        self.type = "frame"
+        self.type = FRAME
         super().save(*args, **kwargs)
 
 
 class Office(Property):
     def available_for_options(self):
-        return ['rent']
+        return PROPERTIES_AVAILABILITY[OFFICE]
         
     def save(self, *args, **kwargs):
-        self.type = "office"
+        self.type = OFFICE
         super().save(*args, **kwargs)
 
 
 class Hostel(Property):
     def available_for_options(self):
-        return ['rent']
+        return PROPERTIES_AVAILABILITY[HOSTEL]
         
     def save(self, *args, **kwargs):
-        self.type = "hostel"
+        self.type = HOSTEL
         super().save(*args, **kwargs)
 
 

@@ -127,11 +127,11 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
     class Meta:
         model = Property
         fields = (
-            'id', 'url', 'available_for', 'available_for_options', 'price',
+            'id', 'url', 'type', 'available_for', 'available_for_options', 'price',
             'price_rate_unit', 'payment_terms', 'is_price_negotiable', 'rating',
             'currency', 'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features', 'contact',
-            'post_date', 'type'
+            'post_date',
         )
 
     def create(self, validated_data):

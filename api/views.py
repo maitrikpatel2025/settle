@@ -1,7 +1,7 @@
 import json
 
 from django.db.models import Value
-from rest_framework import viewsets, status
+from rest_framework import views, viewsets, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.models import Token
@@ -20,7 +20,7 @@ from api.permissions import (
 from .models import (
     Location, Contact, Service, Potential, Property, PropertyPicture, Room,
     House, Apartment, Hostel, Frame, Land, Office, Feature, Amenity, User,
-    ProfilePicture
+    ProfilePicture, PROPERTIES_AVAILABILITY
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
@@ -331,3 +331,25 @@ class FeatureViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     serializer_class = FeatureSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields('id', 'property', 'name', 'value')
+
+
+class PropertiesAvailability(views.APIView):
+    def get(self, request, *args, **kwargs):
+        """
+        Return options for available_for field for each property type
+        """
+        return Response(PROPERTIES_AVAILABILITY)
+
+
+class PropertyAvailability(views.APIView):
+    def get(self, request, *args, **kwargs):
+        """
+        Return options for available_for field for a given property type
+        """
+        property_type = kwargs.pop('type')
+        try:
+            availability = PROPERTIES_AVAILABILITY[property_type]
+        except KeyError:
+            msg = f'Property type `{property_type}` is not defined.'
+            return Response({'detail': msg}, status=404)
+        return Response(availability)
