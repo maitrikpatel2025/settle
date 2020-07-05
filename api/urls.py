@@ -32,4 +32,5 @@ urlpatterns = [
     path('register/', views.RegisterUser.as_view()),
     path('properties-availability/', views.PropertiesAvailability.as_view()),
     path('properties-availability/<str:type>/', views.PropertyAvailability.as_view()),
+    path('my-fav-properties/', views.FavouriteProperties.as_view()),
 ]
