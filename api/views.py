@@ -1,7 +1,7 @@
 import json
 
 from django.db.models import Value
-from rest_framework import viewsets, status
+from rest_framework import views, viewsets, status, generics
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.models import Token
@@ -20,7 +20,7 @@ from api.permissions import (
 from .models import (
     Location, Contact, Service, Potential, Property, PropertyPicture, Room,
     House, Apartment, Hostel, Frame, Land, Office, Feature, Amenity, User,
-    ProfilePicture
+    ProfilePicture, PROPERTIES_AVAILABILITY
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
@@ -198,7 +198,7 @@ class PropertyViewSet(QueryArgumentsMixin, EagerLoadingMixin, viewsets.ModelView
     serializer_class = PropertySerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_fields = fields(
-        'id',  'available_for', {'price': ['exact', 'lt', 'gt']},
+        {'id': ['exact', 'in']},  'available_for', {'price': ['exact', 'lt', 'gt']},
         'is_price_negotiable', 'currency', 'location', 'owner',
         {'contact': ['exact', 'in']},
         {'post_date': ['exact', 'lt', 'gt', 'range']},
@@ -331,3 +331,68 @@ class FeatureViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     serializer_class = FeatureSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields('id', 'property', 'name', 'value')
+
+
+class PropertiesAvailability(views.APIView):
+    def get(self, request, *args, **kwargs):
+        """
+        Return options for available_for field for each property type
+        """
+        return Response(PROPERTIES_AVAILABILITY)
+
+
+class PropertyAvailability(views.APIView):
+    def get(self, request, *args, **kwargs):
+        """
+        Return options for available_for field for a given property type
+        """
+        property_type = kwargs.pop('type')
+        try:
+            availability = PROPERTIES_AVAILABILITY[property_type]
+        except KeyError:
+            msg = f'Property type `{property_type}` is not defined.'
+            return Response({'detail': msg}, status=404)
+        return Response(availability)
+        
+
+class FavouriteProperties(QueryArgumentsMixin, EagerLoadingMixin, generics.ListAPIView):
+    queryset = Property.objects.all().order_by('-post_date')
+
+    select_related = {
+        'location': 'location', 
+        'contact': 'contact', 
+        'owner': 'owner'
+    }
+    prefetch_related = {
+        'pictures': 'pictures', 
+        'amenities': 'amenities', 
+        'services': 'services', 
+        'potentials': 'potentials', 
+        'other_features': 'other_features'
+    }
+
+    serializer_class = PropertySerializer
+    permission_classes = (IsAuthenticated,)
+    filter_fields = fields(
+        {'id': ['exact', 'in']},  'available_for', {'price': ['exact', 'lt', 'gt']},
+        'is_price_negotiable', 'currency', 'location', 'owner',
+        {'contact': ['exact', 'in']},
+        {'post_date': ['exact', 'lt', 'gt', 'range']},
+    )
+    search_fields = [
+        'location__country',
+        'location__region',
+        'location__distric',
+        'location__street1',
+        'location__street2'
+    ]
+    
+    def filter_queryset(self, queryset):
+        """
+        Return user's favourite properties
+        """
+        user = self.request.user
+        fav_ids = user.fav_properties.values_list('id')
+        qs = queryset.filter(id__in=fav_ids)
+        return super().filter_queryset(qs)
+        
