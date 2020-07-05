@@ -66,6 +66,7 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=15, blank=True)
     biography = models.TextField(max_length=256, blank=True)
+    fav_properties = models.ManyToManyField('Property')
 
 
 class ProfilePicture(models.Model):
