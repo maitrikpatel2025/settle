@@ -27,18 +27,32 @@ class ProfilePictureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return picture
 
 
-class UserSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class MinimalPropertySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Property
+        fields = ('id',)
+
+
+class UserSerializer(DynamicFieldsMixin, NestedModelSerializer):
     picture = ProfilePictureSerializer(read_only=True)
     password = serializers.CharField(
         write_only=True,
         style={'input_type': 'password'}
     )
+    fav_properties = NestedField(
+        MinimalPropertySerializer,
+        many=True,
+        return_pk=True,
+        create_ops=[],
+        update_ops=['add', 'remove']
+    )
+    
     class Meta:
         model = User
         fields = (
             'id', 'url', 'username', 'email', 'password', 'phone', 'groups',
             'date_joined', 'is_staff', 'full_name', 'is_active', 'picture',
-            'biography'
+            'biography', 'fav_properties'
         )
         read_only_fields = (
             'date_joined', 'is_staff'
@@ -122,7 +136,8 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
         many=True, required=False, create_ops=["create"],
         update_ops=["update", "create", "remove"]
     )
-    owner = UserSerializer(many=False, read_only=True)
+    owner = UserSerializer(many=False, read_only=True, exclude=['fav_properties'])
+    is_my_favourite = serializers.SerializerMethodField()
     type = serializers.CharField(read_only=True)
     class Meta:
         model = Property
@@ -131,8 +146,16 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
             'price_rate_unit', 'payment_terms', 'is_price_negotiable', 'rating',
             'currency', 'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features', 'contact',
-            'post_date',
+            'post_date', 'is_my_favourite'
         )
+        
+    def get_is_my_favourite(self, obj):
+        request = self.context.get('request')
+        user = request.user
+        
+        if user.is_authenticated:
+            return user.fav_properties.all().filter(id=obj.id).exists()
+        return False
 
     def create(self, validated_data):
         """function for creating a property """
