@@ -13,7 +13,7 @@ from rest_framework.authtoken.models import Token
 SALE = 'sale'
 RENT = 'rent'
 
-AVAILABLE_FOR_CHOICES = (
+AVAILABILITY_CHOICES = (
     (SALE, 'Sale'),
     (RENT, 'Rent'),
 )
@@ -136,7 +136,7 @@ class Potential(models.Model):
 class Property(models.Model):
     id = models.AutoField(primary_key=True)
     type = models.CharField(max_length=256, editable=False, default=PROPERTY)
-    available_for = models.CharField(max_length=5, choices=AVAILABLE_FOR_CHOICES)
+    available_for = models.CharField(max_length=5, choices=AVAILABILITY_CHOICES)
     price = models.FloatField()
     price_rate_unit = models.CharField(max_length=100, blank=True, null=True)
     currency = models.CharField(max_length=256)
