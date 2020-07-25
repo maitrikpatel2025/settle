@@ -44,7 +44,8 @@ class UserSerializer(DynamicFieldsMixin, NestedModelSerializer):
         many=True,
         return_pk=True,
         create_ops=[],
-        update_ops=['add', 'remove']
+        update_ops=['add', 'remove'],
+        required=False
     )
     
     class Meta:
