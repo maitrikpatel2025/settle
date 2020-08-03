@@ -146,7 +146,7 @@ class LocationViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields(
         'id', 'country', 'region', 'distric', 'street1',
-        'street2'
+        'street2', 'address'
     )
 
 
@@ -215,7 +215,8 @@ class PropertyViewSetMixin(QueryArgumentsMixin, EagerLoadingMixin):
         'location__region',
         'location__distric',
         'location__street1',
-        'location__street2'
+        'location__street2',
+        'address'
     ]
 
     def destroy(self, request, pk=None):
@@ -398,7 +399,7 @@ class NearbyPropertiesViewSet(PropertyViewSetMixin, viewsets.ReadOnlyModelViewSe
         serializer.is_valid(raise_exception=True)
         
         SRID = 4326
-        location_to_scan_from = Point(float(longitude), float(latitude), srid=SRID)
+        location_to_scan_from = Point(longitude, latitude, srid=SRID)
 
         qs = queryset.annotate(
             distance=Distance('location__point', location_to_scan_from)

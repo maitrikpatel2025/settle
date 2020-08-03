@@ -97,11 +97,11 @@ class Location(models.Model):
     address = models.CharField(max_length=256, blank=True)
 
     @property
-    def long(self):
+    def longitude(self):
         return self.point.x
 
     @property
-    def lat(self):
+    def latitude(self):
         return self.point.y
 
     @property
