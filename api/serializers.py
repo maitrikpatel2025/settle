@@ -71,7 +71,12 @@ class LocationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         model = Location
         fields = (
             'id', 'url', 'country', 'region', 'distric',
-            'street1', 'street2', 'longitude', 'latitude'
+            'street1', 'street2', 'address', 'point', 'lat',
+            'long', 'srid'
+        )
+
+        read_only_fields = (
+            'long', 'lat', 'srid'
         )
 
 
@@ -140,6 +145,10 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
     owner = UserSerializer(many=False, read_only=True, exclude=['fav_properties'])
     is_my_favourite = serializers.SerializerMethodField()
     type = serializers.CharField(read_only=True)
+
+    # This is used when retrieving nearby properties
+    distance = serializers.CharField(default=None)
+
     class Meta:
         model = Property
         fields = (
@@ -147,7 +156,7 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
             'price_rate_unit', 'payment_terms', 'is_price_negotiable', 'rating',
             'currency', 'descriptions', 'location', 'owner', 'amenities',
             'services', 'potentials', 'pictures', 'other_features', 'contact',
-            'post_date', 'is_my_favourite'
+            'post_date', 'is_my_favourite', 'distance'
         )
         
     def get_is_my_favourite(self, obj):
@@ -225,3 +234,8 @@ class HostelSerializer(PropertySerializer):
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
+
+class NearbyLocationSerializer(serializers.Serializer):
+    longitude = serializers.FloatField(required=True)
+    latitude = serializers.FloatField(required=True)
+    radius_to_scan = serializers.FloatField(required=False)

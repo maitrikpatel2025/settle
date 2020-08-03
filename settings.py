@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
@@ -84,7 +85,7 @@ WSGI_APPLICATION = 'wsgi.application'
 if 'PRODUCTION' in os.environ:
     DEBUG = False
     db_conf = {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'settle',
         'USER': 'yezy',
         'PASSWORD': '',
@@ -93,7 +94,7 @@ if 'PRODUCTION' in os.environ:
     }
 else:
     db_conf = {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'settle',
         'USER': 'yezy',
         'PASSWORD': '',

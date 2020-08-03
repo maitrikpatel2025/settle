@@ -1,7 +1,8 @@
 import os
 from uuid import uuid4
 
-from django.db import models
+from django.contrib.gis.db import models
+from django.contrib.gis.geos import Point
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
@@ -92,8 +93,20 @@ class Location(models.Model):
     distric = models.CharField(max_length=256, blank=True)
     street1 = models.CharField(max_length=256, blank=True)
     street2 = models.CharField(max_length=256, blank=True)
-    longitude = models.FloatField(blank=True, null=True)
-    latitude = models.FloatField(blank=True, null=True)
+    point = models.PointField(default=Point(0.0, 0.0))
+    address = models.CharField(max_length=256, blank=True)
+
+    @property
+    def long(self):
+        return self.point.x
+
+    @property
+    def lat(self):
+        return self.point.y
+
+    @property
+    def srid(self):
+        return self.point.srid
 
     def __str__(self):
         return f"{self.country}, {self.region}, {self.distric}, {self.street1}, {self.street2}"
