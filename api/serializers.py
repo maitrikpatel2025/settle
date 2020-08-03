@@ -71,12 +71,12 @@ class LocationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         model = Location
         fields = (
             'id', 'url', 'country', 'region', 'distric',
-            'street1', 'street2', 'address', 'point', 'lat',
-            'long', 'srid'
+            'street1', 'street2', 'address', 'point', 'latitude',
+            'longitude', 'srid'
         )
 
         read_only_fields = (
-            'long', 'lat', 'srid'
+            'longitude', 'latitude', 'srid'
         )
 
 
