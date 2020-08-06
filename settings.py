@@ -161,7 +161,6 @@ USE_L10N = True
 USE_TZ = True
 
 # Media and static directories
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 MEDIA_ROOT = env('MEDIA_ROOT')
 STATIC_ROOT = env('STATIC_ROOT')
 
