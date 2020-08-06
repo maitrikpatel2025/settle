@@ -11,6 +11,13 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import environ
+
+
+env = environ.Env()
+
+# reading .env file
+environ.Env.read_env()
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -24,7 +31,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '-8)0upe2i_!(eif()gd!m^ot%r0lt10ftg#ovr8ts2)p-_efaf'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG')
 
 ALLOWED_HOSTS = ['*']
 
@@ -82,32 +89,18 @@ WSGI_APPLICATION = 'wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-if 'PRODUCTION' in os.environ:
-    DEBUG = False
-    db_conf = {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'settle',
-        'USER': 'yezy',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': ''
-    }
-else:
-    db_conf = {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'settle',
-        'USER': 'yezy',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': ''
-    }
-
 DATABASES = {
-    'default': db_conf
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT')
+    }
 }
 
-
-#Auth model
+# Auth model
 AUTH_USER_MODEL = 'api.User'
 
 ############## CORS configurations #################
@@ -167,14 +160,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-if 'PRODUCTION' in os.environ:
-    MEDIA_ROOT = '/var/www/settle/media/'
-    STATIC_ROOT = '/var/www/settle/static/'
-else:
-    MEDIA_ROOT = './media/'
-    STATIC_ROOT = './static/'
-
+# Media and static directories
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+MEDIA_ROOT = env('MEDIA_ROOT')
+STATIC_ROOT = env('STATIC_ROOT')
 
+# Media and static URLs
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
