@@ -167,15 +167,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
-STATIC_ROOT = './static/'
-STATIC_URL = '/static/'  #this is for every static file within django application
-
 if 'PRODUCTION' in os.environ:
     MEDIA_ROOT = '/var/www/settle/media/'
+    STATIC_ROOT = '/var/www/settle/static/'
 else:
     MEDIA_ROOT = './media/'
+    STATIC_ROOT = './static/'
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
 MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
