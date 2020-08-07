@@ -238,4 +238,4 @@ class HostelSerializer(PropertySerializer):
 class NearbyLocationSerializer(serializers.Serializer):
     longitude = serializers.FloatField(required=True)
     latitude = serializers.FloatField(required=True)
-    radius_to_scan = serializers.FloatField(required=False)
+    radius_to_scan = serializers.FloatField(required=True)

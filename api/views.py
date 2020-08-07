@@ -386,29 +386,37 @@ class NearbyPropertiesViewSet(PropertyViewSetMixin, viewsets.ReadOnlyModelViewSe
         """
         Return nearby properties
         """
+        DEFAULT_RADIUS_TO_SCAN = 1000 # In meters
+        
         longitude = self.request.query_params.get('longitude', None)
         latitude = self.request.query_params.get('latitude', None)
-        radius_of_area_to_scan = self.request.query_params.get('radius_to_scan', None)  # In meters
+        radius_to_scan = self.request.query_params.get(
+            'radius_to_scan',
+            DEFAULT_RADIUS_TO_SCAN
+        )
 
         data = {
             'longitude': longitude,
             'latitude': latitude,
-            'radius_of_area_to_scan': radius_of_area_to_scan
+            'radius_to_scan': radius_to_scan
         }
         serializer = NearbyLocationSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         
         SRID = 4326
-        location_to_scan_from = Point(longitude, latitude, srid=SRID)
+        location_to_scan_from = Point(
+            serializer.data.get('longitude'),
+            serializer.data.get('latitude'),
+            srid=SRID
+        )
 
         qs = queryset.annotate(
             distance=Distance('location__point', location_to_scan_from)
         )
         
-        if radius_of_area_to_scan is not None:
-            qs = qs.filter(
-                distance__lt=float(radius_of_area_to_scan)
-            )
+        qs = qs.filter(
+            distance__lt=serializer.data.get('radius_to_scan')
+        )
 
         qs = qs.order_by('distance')
 
