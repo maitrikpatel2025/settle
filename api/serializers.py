@@ -70,8 +70,7 @@ class LocationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = (
-            'id', 'url', 'country', 'region', 'distric',
-            'street1', 'street2', 'address', 'point', 'latitude',
+            'id', 'url', 'address', 'point', 'latitude',
             'longitude', 'srid'
         )
 
