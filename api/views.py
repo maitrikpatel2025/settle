@@ -211,12 +211,7 @@ class PropertyViewSetMixin(QueryArgumentsMixin, EagerLoadingMixin):
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
     search_fields = [
-        'location__country',
-        'location__region',
-        'location__distric',
-        'location__street1',
-        'location__street2',
-        'address'
+        'location__address'
     ]
 
     def destroy(self, request, pk=None):
