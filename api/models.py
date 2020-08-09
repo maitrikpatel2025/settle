@@ -88,11 +88,6 @@ class ProfilePicture(models.Model):
 
 class Location(models.Model):
     id = models.AutoField(primary_key=True)
-    country = models.CharField(max_length=256, blank=True)
-    region = models.CharField(max_length=256, blank=True)
-    distric = models.CharField(max_length=256, blank=True)
-    street1 = models.CharField(max_length=256, blank=True)
-    street2 = models.CharField(max_length=256, blank=True)
     point = models.PointField(default=Point(0.0, 0.0))
     address = models.CharField(max_length=256, blank=True)
 
