@@ -104,7 +104,7 @@ class Location(models.Model):
         return self.point.srid
 
     def __str__(self):
-        return f"{self.country}, {self.region}, {self.distric}, {self.street1}, {self.street2}"
+        return f"{self.address}"
 
 
 class Contact(models.Model):
@@ -153,8 +153,8 @@ class Property(models.Model):
     descriptions = models.TextField(blank=True, null=True)
     rating = models.SmallIntegerField(default=3, null=True)
     owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
-    location = models.ForeignKey(Location, blank=True, null=True, on_delete=models.CASCADE)
-    contact = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.CASCADE)
+    location = models.OneToOneField(Location, blank=True, null=True, on_delete=models.CASCADE)
+    contact = models.OneToOneField(Contact, blank=True, null=True, on_delete=models.CASCADE)
     amenities = models.ManyToManyField(Amenity, blank=True, related_name="properties")
     services = models.ManyToManyField(Service, blank=True, related_name="properties")
     potentials = models.ManyToManyField(Potential, blank=True, related_name="properties")
@@ -165,14 +165,10 @@ class Property(models.Model):
         
     def __str__(self):
         return (
-            "%s, %s, %s, %s, %s, %s" %
+            "%s, %s" %
             (
                 self.__class__.__name__,
-                self.location.country,
-                self.location.region,
-                self.location.distric,
-                self.location.street1,
-                self.location.street2
+                self.location.address
             )
         )
 
@@ -206,7 +202,7 @@ class PropertyPicture(models.Model):
         return f"{self.src}"
 
 
-class Room(Property):
+class SingleRoom(Property):
     def available_for_options(self):
         return PROPERTIES_AVAILABILITY[ROOM]
         
@@ -282,3 +278,20 @@ class Feature(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RoomType(models.Model):
+    id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=10)
+    name = models.CharField(max_length=256)
+    descriptions = models.TextField(blank=True, null=True)
+
+
+class Room(models.Model):
+    id = models.AutoField(primary_key=True)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='rooms')
+    type = models.OneToOneField(RoomType, on_delete=models.CASCADE)
+    count = models.IntegerField()
+
+    class Meta:
+        unique_together = ('property', 'type')
