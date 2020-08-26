@@ -13,24 +13,26 @@ from django.db.models.functions import Concat, Replace
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+)
 
 from api.permissions import (
     IsOwnerOrReadOnly, IsAllowedUser, HasGroupPermission, 
-    BelongsToPropertyOwnedByAuthenticatedUser
+    BelongsToPropertyOwnedByAuthenticatedUser, IsAdminOrReadOnly
 )
 from .models import (
-    Location, Contact, Service, Potential, Property, PropertyPicture, Room,
+    Location, Contact, Service, Potential, Property, PropertyPicture, SingleRoom,
     House, Apartment, Hostel, Frame, Land, Office, Feature, Amenity, User,
-    ProfilePicture, PROPERTIES_AVAILABILITY
+    ProfilePicture, PROPERTIES_AVAILABILITY, RoomType
 )
 from .serializers import (
     UserSerializer, GroupSerializer, LocationSerializer, FeatureSerializer,
     ContactSerializer, ServiceSerializer, PotentialSerializer,
-    PropertySerializer, PropertyPictureSerializer, RoomSerializer, HouseSerializer,
+    PropertySerializer, PropertyPictureSerializer, SingleRoomSerializer, HouseSerializer,
     ApartmentSerializer, HostelSerializer, FrameSerializer, LandSerializer,
     OfficeSerializer, AmenitySerializer, ProfilePictureSerializer,
-    NearbyLocationSerializer
+    NearbyLocationSerializer, RoomTypeSerializer
 )
 
 
@@ -145,8 +147,7 @@ class LocationViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     serializer_class = LocationSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_fields = fields(
-        'id', 'country', 'region', 'distric', 'street1',
-        'street2', 'address'
+        'id', 'address'
     )
 
 
@@ -211,7 +212,8 @@ class PropertyViewSetMixin(QueryArgumentsMixin, EagerLoadingMixin):
         {'post_date': ['exact', 'lt', 'gt', 'range']},
     )
     search_fields = [
-        'location__address'
+        'location__address',
+        'descriptions'
     ]
 
     def destroy(self, request, pk=None):
@@ -239,16 +241,64 @@ class PropertyViewSetMixin(QueryArgumentsMixin, EagerLoadingMixin):
             queryset = queryset.filter(**lookup)
         return queryset
 
-    def filter_queryset(self, queryset):
-        """Do a custom search of location in every field of Location model"""
+    def filter_with_contains_lookup(self, queryset):
         request = self.request
-        for backend in self.filter_backends:
-            queryset = backend().filter_queryset(request, queryset, self)
+        qs = self.contains_lookup(request, queryset, "services__contains")
+        qs = self.contains_lookup(request, qs, "amenities__contains")
+        qs = self.contains_lookup(request, qs, "potentials__contains")
+        return qs
 
-        queryset = self.contains_lookup(request, queryset, "services__contains")
-        queryset = self.contains_lookup(request, queryset, "amenities__contains")
-        queryset = self.contains_lookup(request, queryset, "potentials__contains")
-        return queryset
+    def get_nearby_properties(self, queryset):
+        """
+        Return nearby properties
+        """
+        DEFAULT_RADIUS_TO_SCAN = 1000 # In meters
+        
+        longitude = self.request.query_params.get('longitude', None)
+        latitude = self.request.query_params.get('latitude', None)
+
+        if longitude is None and latitude is None:
+            # No filtering by latitude & longitude
+            return queryset
+            
+        radius_to_scan = self.request.query_params.get(
+            'radius_to_scan',
+            DEFAULT_RADIUS_TO_SCAN
+        )
+
+        data = {
+            'longitude': longitude,
+            'latitude': latitude,
+            'radius_to_scan': radius_to_scan
+        }
+        serializer = NearbyLocationSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        
+        SRID = 4326
+        location_to_scan_from = Point(
+            serializer.data.get('longitude'),
+            serializer.data.get('latitude'),
+            srid=SRID
+        )
+
+        qs = queryset.annotate(
+            distance=Distance('location__point', location_to_scan_from)
+        )
+        
+        qs = qs.filter(
+            distance__lt=serializer.data.get('radius_to_scan')
+        )
+
+        qs = qs.order_by('distance')
+
+        return qs
+
+    def get_queryset(self):
+        """Do a custom search of location in every field of Location model"""
+        queryset = super().get_queryset()
+        qs = self.filter_with_contains_lookup(queryset)
+        qs = self.get_nearby_properties(qs)
+        return qs
 
 
 class PropertyViewSet(PropertyViewSetMixin, viewsets.ModelViewSet):
@@ -263,10 +313,10 @@ class PropertyPictureViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
     filter_fields = fields('id', 'property', 'tooltip')
 
 
-class RoomViewSet(PropertyViewSet):
-    """API endpoint that allows Room to be viewed or edited."""
-    queryset = Room.objects.all().order_by('-post_date')
-    serializer_class = RoomSerializer
+class SingleRoomViewSet(PropertyViewSet):
+    """API endpoint that allows SingleRoom to be viewed or edited."""
+    queryset = SingleRoom.objects.all().order_by('-post_date')
+    serializer_class = SingleRoomSerializer
     filter_fields = fields(
         'price_rate_unit',
     )
@@ -359,25 +409,35 @@ class PropertyAvailabilityViewSet(viewsets.ViewSet):
         return Response(availability)
 
 
+class RoomTypeViewSet(QueryArgumentsMixin, viewsets.ModelViewSet):
+    """API endpoint that allows PropertyFeature to be viewed or edited."""
+    queryset = RoomType.objects.all().order_by('-id')
+    serializer_class = RoomTypeSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly)
+    filter_fields = fields('id', 'code', 'name')
+    pagination_class = None
+
+
 class FavouritePropertiesViewSet(PropertyViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """API endpoint that returns user's favourite properties"""
     permission_classes = (IsAuthenticated,)
 
-    def filter_queryset(self, queryset):
+    def get_queryset(self):
         """
         Return user's favourite properties
         """
         user = self.request.user
+        queryset = super().get_queryset()
         fav_ids = user.fav_properties.values_list('id')
         qs = queryset.filter(id__in=fav_ids)
-        return super().filter_queryset(qs)
+        return qs
         
 
 class NearbyPropertiesViewSet(PropertyViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """API endpoint that returns nearby properties from a specified point"""
     permission_classes = (AllowAny,)
 
-    def filter_queryset(self, queryset):
+    def get_queryset(self):
         """
         Return nearby properties
         """
@@ -405,6 +465,8 @@ class NearbyPropertiesViewSet(PropertyViewSetMixin, viewsets.ReadOnlyModelViewSe
             srid=SRID
         )
 
+        queryset = super().get_queryset()
+
         qs = queryset.annotate(
             distance=Distance('location__point', location_to_scan_from)
         )
@@ -415,4 +477,4 @@ class NearbyPropertiesViewSet(PropertyViewSetMixin, viewsets.ReadOnlyModelViewSe
 
         qs = qs.order_by('distance')
 
-        return super().filter_queryset(qs)
+        return qs
