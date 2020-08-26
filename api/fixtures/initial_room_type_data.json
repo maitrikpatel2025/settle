@@ -1,0 +1,83 @@
+[
+  {
+    "model": "api.roomtype",
+    "pk": 1,
+    "fields": {
+      "code": "BER",
+      "name": "Bedroom",
+      "descriptions": ""
+    }
+  },
+  {
+    "model": "api.roomtype",
+    "pk": 2,
+    "fields": {
+      "code": "BER_MA",
+      "name": "Master Bedroom",
+      "descriptions": ""
+    }
+  },
+  {
+    "model": "api.roomtype",
+    "pk": 3,
+    "fields": {
+      "code": "LIR",
+      "name": "Living Room",
+      "descriptions": ""
+    }
+  },
+  {
+    "model": "api.roomtype",
+    "pk": 4,
+    "fields": {
+      "code": "DIR",
+      "name": "Dining Room",
+      "descriptions": ""
+    }
+  },
+  {
+    "model": "api.roomtype",
+    "pk": 5,
+    "fields": {
+      "code": "KIR",
+      "name": "Kitchen Room",
+      "descriptions": ""
+    }
+  },
+  {
+    "model": "api.roomtype",
+    "pk": 6,
+    "fields": {
+      "code": "STR",
+      "name": "Storage Room",
+      "descriptions": ""
+    }
+  },
+  {
+    "model": "api.roomtype",
+    "pk": 7,
+    "fields": {
+      "code": "BAR_PU",
+      "name": "Public Bathroom",
+      "descriptions": ""
+    }
+  },
+  {
+    "model": "api.roomtype",
+    "pk": 8,
+    "fields": {
+      "code": "BAR_PR",
+      "name": "Private Bathroom",
+      "descriptions": ""
+    }
+  },
+  {
+    "model": "api.roomtype",
+    "pk": 9,
+    "fields": {
+      "code": "BAR_MA",
+      "name": "Master Bathroom",
+      "descriptions": ""
+    }
+  }
+]
