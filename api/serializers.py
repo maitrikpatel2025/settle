@@ -7,8 +7,8 @@ from django_restql.serializers import NestedModelSerializer
 
 from .models import (
     Location, Contact, Service, Potential, Property, Feature,
-    PropertyPicture, Room, House, Apartment, Hostel, Frame, Land,
-    Office, Amenity, User, ProfilePicture
+    PropertyPicture, SingleRoom, House, Apartment, Hostel, Frame, Land,
+    Office, Amenity, User, ProfilePicture, RoomType, Room
 )
 
 
@@ -176,26 +176,41 @@ class PropertySerializer(DynamicFieldsMixin, NestedModelSerializer):
         return property
 
 
-class RoomSerializer(PropertySerializer):
+class RoomTypeSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = RoomType
+        fields = ('id', 'url', 'code', 'name', 'descriptions')
+
+
+class RoomSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = ()
+        fields = ('id', 'url', 'property', 'type', 'count')
+
+
+class SingleRoomSerializer(PropertySerializer):
+    rooms = NestedField(RoomSerializer, many=True, required=False)
+    class Meta:
+        model = SingleRoom
+        fields = ('rooms',)
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
 
 class HouseSerializer(PropertySerializer):
+    rooms = NestedField(RoomSerializer, many=True, required=False)
     class Meta:
         model = House
-        fields = ()
+        fields = ('rooms',)
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
 
 class ApartmentSerializer(PropertySerializer):
+    rooms = NestedField(RoomSerializer, many=True, required=False)
     class Meta:
         model = Apartment
-        fields = ()
+        fields = ('rooms',)
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
@@ -227,9 +242,10 @@ class OfficeSerializer(PropertySerializer):
 
 
 class HostelSerializer(PropertySerializer):
+    rooms = NestedField(RoomSerializer, many=True, required=False)
     class Meta:
         model = Hostel
-        fields = ()
+        fields = ('rooms',)
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
