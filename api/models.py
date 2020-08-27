@@ -1,6 +1,7 @@
 import os
 from uuid import uuid4
 
+from django.db.models import Q, Sum
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from django.conf import settings
@@ -202,16 +203,23 @@ class PropertyPicture(models.Model):
         return f"{self.src}"
 
 
-class SingleRoom(Property):
+class RoomsCountMixin():
+    def rooms_count(self):
+        return self.rooms.get_queryset().filter(
+            ~ Q(type__code__in=['BAR_PU', 'BAR_PR', 'BAR_MA'])
+        ).aggregate(Sum('count'))['count__sum'] or 0
+
+
+class SingleRoom(RoomsCountMixin, Property):
     def available_for_options(self):
         return PROPERTIES_AVAILABILITY[ROOM]
-        
+
     def save(self, *args, **kwargs):
         self.type = ROOM
         super().save(*args, **kwargs)
 
 
-class House(Property):
+class House(RoomsCountMixin, Property):
     def available_for_options(self):
         return PROPERTIES_AVAILABILITY[HOUSE]
         
@@ -220,7 +228,7 @@ class House(Property):
         super().save(*args, **kwargs)
 
 
-class Apartment(Property):
+class Apartment(RoomsCountMixin, Property):
     def available_for_options(self):
         return PROPERTIES_AVAILABILITY[APARTMENT]
         
@@ -261,7 +269,7 @@ class Office(Property):
         super().save(*args, **kwargs)
 
 
-class Hostel(Property):
+class Hostel(RoomsCountMixin, Property):
     def available_for_options(self):
         return PROPERTIES_AVAILABILITY[HOSTEL]
         
