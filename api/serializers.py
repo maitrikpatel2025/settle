@@ -43,6 +43,7 @@ class UserSerializer(DynamicFieldsMixin, NestedModelSerializer):
         MinimalPropertySerializer,
         many=True,
         return_pk=True,
+        write_only=True,
         create_ops=[],
         update_ops=['add', 'remove'],
         required=False
@@ -183,22 +184,23 @@ class RoomTypeSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
 
 class RoomSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    type = NestedField(RoomTypeSerializer, accept_pk=True, required=False)
     class Meta:
         model = Room
-        fields = ('id', 'url', 'property', 'type', 'count')
+        fields = ('id', 'property', 'type', 'count')
 
 
 class SingleRoomSerializer(PropertySerializer):
-    rooms = NestedField(RoomSerializer, many=True, required=False)
+    rooms = NestedField(RoomSerializer, many=True, required=False, exclude=['property'])
     class Meta:
         model = SingleRoom
-        fields = ('rooms',)
+        fields = ('rooms_count', 'rooms',)
 
     Meta.fields = PropertySerializer.Meta.fields + Meta.fields
 
 
 class HouseSerializer(PropertySerializer):
-    rooms = NestedField(RoomSerializer, many=True, required=False)
+    rooms = NestedField(RoomSerializer, many=True, required=False, exclude=['property'])
     class Meta:
         model = House
         fields = ('rooms',)
@@ -207,7 +209,7 @@ class HouseSerializer(PropertySerializer):
 
 
 class ApartmentSerializer(PropertySerializer):
-    rooms = NestedField(RoomSerializer, many=True, required=False)
+    rooms = NestedField(RoomSerializer, many=True, required=False, exclude=['property'])
     class Meta:
         model = Apartment
         fields = ('rooms',)
@@ -242,7 +244,7 @@ class OfficeSerializer(PropertySerializer):
 
 
 class HostelSerializer(PropertySerializer):
-    rooms = NestedField(RoomSerializer, many=True, required=False)
+    rooms = NestedField(RoomSerializer, many=True, required=False, exclude=['property'])
     class Meta:
         model = Hostel
         fields = ('rooms',)
