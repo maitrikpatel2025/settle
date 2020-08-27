@@ -236,9 +236,12 @@ class PropertyViewSetMixin(QueryArgumentsMixin, EagerLoadingMixin):
     def contains_lookup(self, request, queryset, field):
         ids = json.loads(request.query_params.get(field, "[]"))
         field = field.replace("__contains", "__in")
-        for id in ids:
-            lookup = {field: [id]}
-            queryset = queryset.filter(**lookup)
+
+        if(not ids):
+            return queryset
+
+        lookup = {field: ids}
+        queryset = queryset.filter(**lookup).distinct()
         return queryset
 
     def filter_with_contains_lookup(self, queryset):
@@ -318,7 +321,7 @@ class SingleRoomViewSet(PropertyViewSet):
     queryset = SingleRoom.objects.all().order_by('-post_date')
     serializer_class = SingleRoomSerializer
     filter_fields = fields(
-        'price_rate_unit',
+        'price_rate_unit', 'rooms__type', 'rooms__count'
     )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
