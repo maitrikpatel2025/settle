@@ -350,7 +350,9 @@ class LandViewSet(PropertyViewSet):
     """API endpoint that allows Land to be viewed or edited."""
     queryset = Land.objects.all().order_by('-post_date')
     serializer_class = LandSerializer
-    filter_fields = fields()
+    filter_fields = fields(
+        {'square_meters': ['gt', 'lt', 'exact']}
+    )
     filter_fields = {**PropertyViewSet.filter_fields, **filter_fields}
 
 
