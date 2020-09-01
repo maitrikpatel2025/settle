@@ -238,9 +238,7 @@ class Apartment(RoomsCountMixin, Property):
 
 
 class Land(Property):
-    width = models.CharField(max_length=100, blank=True, null=True)
-    length = models.CharField(max_length=100, blank=True, null=True)
-    area = models.CharField(max_length=100, blank=True, null=True)
+    square_meters = models.FloatField()
     is_registered = models.CharField(max_length=5, blank=True, null=True, choices=ANSWER_CHOICES)
 
     def available_for_options(self):
